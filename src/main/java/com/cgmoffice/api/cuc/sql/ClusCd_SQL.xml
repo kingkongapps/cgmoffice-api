@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.cuc.clusCd'>
+
+	<!-- 약관번호수신내역 조회 -->
+	<select id="selectClusResHisList_TB_INDV_CLUS_RCV_MST"
+		parameterType="com.cgmoffice.api.cuc.dto.SearchClusResHisDto"
+		resultType="com.cgmoffice.api.cuc.dto.ClusResHisDto"
+	>
+		<choose>
+			<when test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusResHisList_TB_INDV_CLUS_RCV_MST*/
+					SELECT T.*
+					FROM(SELECT DISTINCT
+							A.INDV_CLUS_RCV_ID indvClusRcvId /* 개별약관접수ID */
+							,COALESCE(REGEXP_SUBSTR(A.MXTR_CLUS_CD,'[^-]+', 1, 1), '') prdtCd /* 주계약 상품코드 */
+							,A.CRT_DTM rcmYmd /* 수신일자 */
+							,A.MXTR_CLUS_CD || '-' || A.CONT_YMD mxtrClusCd /* 약관번호 */
+							,B.MNCNTRCT_SPCC_NM mncntrctSpccNm /* 상품명 */
+							,A.SNDURL sndurl /* 유입경로 */
+							,(SELECT CD_NM FROM TB_DTL_CD
+								WHERE CD = A.CMPNY_CD
+								AND GRP_CD = 'CMPNY_CODE') cmpnyNm /* 보험회사 */
+							,A.CRT_DTM crtDtm /* 생성일자 */
+						FROM TB_INDV_CLUS_RCV_MST A
+						,TB_INDV_CLUS_PRDT_MST B
+						WHERE COALESCE(REGEXP_SUBSTR(A.MXTR_CLUS_CD,'[^-]+', 1, 1), '') = B.CLUS_ITM_CD
+						ORDER BY A.CRT_DTM DESC) T
+					WHERE 1=1
+				]]>
+					<if test='cmpnyNm != null and cmpnyNm != ""'>
+						AND T.cmpnyNm LIKE '%' || #{cmpnyNm} || '%'
+
+						<if test='cmpnyNm != null and cmpnyNm.contains("\\")'>
+							ESCAPE '\'
+						</if>
+					</if>
+					<if test='rcmYmd != null and rcmYmd != ""'>
+						AND TO_CHAR(T.rcmYmd, 'YYYYMMDD') = #{rcmYmd}
+					</if>
+			</when>
+			<when test='databaseId == "mysql"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusResHisList_TB_INDV_CLUS_RCV_MST*/
+					SELECT T.*
+					FROM(SELECT DISTINCT
+							A.INDV_CLUS_RCV_ID indvClusRcvId /* 개별약관접수ID */
+							,COALESCE(REGEXP_SUBSTR(A.MXTR_CLUS_CD,'[^-]+', 1, 1), '') prdtCd /* 주계약 상품코드 */
+							,A.CRT_DTM rcmYmd /* 수신일자 */
+							,CONCAT(A.MXTR_CLUS_CD, '-', A.CONT_YMD) mxtrClusCd /* 약관번호 */
+							,B.MNCNTRCT_SPCC_NM mncntrctSpccNm /* 상품명 */
+							,A.SNDURL sndurl /* 유입경로 */
+							,(SELECT CD_NM FROM TB_DTL_CD
+								WHERE CD = A.CMPNY_CD
+								AND GRP_CD = 'CMPNY_CODE') cmpnyNm /* 보험회사 */
+							,A.CRT_DTM crtDtm /* 생성일자 */
+						FROM TB_INDV_CLUS_RCV_MST A
+						,TB_INDV_CLUS_PRDT_MST B
+						WHERE COALESCE(REGEXP_SUBSTR(A.MXTR_CLUS_CD,'[^-]+', 1, 1), '') = B.CLUS_ITM_CD
+						ORDER BY A.CRT_DTM DESC) T
+					WHERE 1=1
+				]]>
+					<if test='cmpnyNm != null and cmpnyNm != ""'>
+						AND T.cmpnyNm LIKE CONCAT('%', #{cmpnyNm}, '%')
+
+						<if test='cmpnyNm != null and cmpnyNm.contains("\\\\")'>
+							ESCAPE '\\'
+						</if>
+					</if>
+					<if test='rcmYmd != null and rcmYmd != ""'>
+						AND DATE_FORMAT(T.rcmYmd, '%Y%m%d') = #{rcmYmd}
+					</if>
+			</when>
+			<when test='databaseId == "sqlserver"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusResHisList_TB_INDV_CLUS_RCV_MST*/
+					SELECT T.*
+					FROM(SELECT DISTINCT
+							A.INDV_CLUS_RCV_ID indvClusRcvId /* 개별약관접수ID */
+							,SUBSTRING(A.MXTR_CLUS_CD, 0, CHARINDEX('-', A.MXTR_CLUS_CD)) prdtCd /* 주계약 상품코드 */
+							,A.CRT_DTM rcmYmd /* 수신일자 */
+							,CONCAT(A.MXTR_CLUS_CD, '-', A.CONT_YMD) mxtrClusCd /* 약관번호 */
+							,B.MNCNTRCT_SPCC_NM mncntrctSpccNm /* 상품명 */
+							,A.SNDURL sndurl /* 유입경로 */
+							,(SELECT CD_NM FROM TB_DTL_CD
+								WHERE CD = A.CMPNY_CD
+								AND GRP_CD = 'CMPNY_CODE') cmpnyNm /* 보험회사 */
+							,A.CRT_DTM crtDtm /* 생성일자 */
+						FROM TB_INDV_CLUS_RCV_MST A
+						,TB_INDV_CLUS_PRDT_MST B
+						WHERE COALESCE(SUBSTRING(A.MXTR_CLUS_CD, 0, CHARINDEX('-', A.MXTR_CLUS_CD)), '') = B.CLUS_ITM_CD) T
+					WHERE 1=1
+				]]>
+					<if test='cmpnyNm != null and cmpnyNm != ""'>
+						AND T.cmpnyNm LIKE CONCAT('%', #{cmpnyNm}, '%')
+
+						<if test='cmpnyNm != null and cmpnyNm.contains("\\")'>
+							ESCAPE '\'
+						</if>
+					</if>
+					<if test='rcmYmd != null and rcmYmd != ""'>
+						AND FORMAT(T.rcmYmd, 'yyyyMMdd') = #{rcmYmd}
+					</if>
+			</when>
+		</choose>
+	</select>
+
+	<!-- 약관번호수신내역 상세조회 -->
+	<select id="selectClusResHisDtlList_TB_INDV_CLUS_RCV_DTL"
+		parameterType="com.cgmoffice.api.cuc.dto.SearchClusResHisDtlDto"
+		resultType="com.cgmoffice.api.cuc.dto.ClusResHisDtlDto"
+	>
+		<choose>
+			<when test='databaseId == "oracle"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusResHisDtlList_TB_INDV_CLUS_RCV_DTL*/
+					SELECT T.*
+					,CASE WHEN MOD(ROWNUM - 1, 4) = 0 THEN 'Y' ELSE 'N' END rowCellMergeYn /* 셀 병합 여부 */
+					,CASE WHEN MOD(ROWNUM - 1, 4) = 0 THEN (CASE WHEN TRUNC((COUNT(*) OVER() - ROWNUM) / 4) <> 0 THEN 4 ELSE MOD((COUNT(*) OVER()), 4) END) ELSE 1 END rowCellMergeCnt /* 셀 병합 카운트 */
+					FROM(SELECT DISTINCT
+							A.INDV_CLUS_RCV_ID indvClusRcvId /* 수신ID */
+							,C.CLUS_ITM_CD clusItmCd /* 약관항목코드 */
+							,D.INSKND_CD inskndCd /* 보종코드 */
+							,B.CLUS_ITM_NM clusItmNm /* 주계약/특약명 */
+							,B.SBSCRB_YN sbscrbYn /* 주/특약가입 */
+							,C.SN sn /* 순번 */
+						FROM TB_INDV_CLUS_RCV_MST A
+							LEFT JOIN TB_INDV_CLUS_RCV_DTL B ON A.INDV_CLUS_RCV_ID = B.INDV_CLUS_MXTR_ID
+							LEFT JOIN TB_CLUS_ITM_SET_MST C ON B.CLUS_ITM_CD = C.CLUS_ITM_CD
+							LEFT JOIN TB_PRDT_INFO_CHG_LST D ON C.CLUS_ITM_CD = D.PRDT_CD
+						WHERE 1=1
+						AND A.INDV_CLUS_RCV_ID = #{indvClusRcvId}
+						AND C.PRDT_CD = #{prdtCd}
+						ORDER BY C.SN) T
+				]]>
+			</when>
+			<when test='databaseId == "postgresql"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusResHisDtlList_TB_INDV_CLUS_RCV_DTL*/
+					SELECT T.*
+						,CASE WHEN MOD(ROW_NUMBER() OVER() - 1, 4) = 0 THEN 'Y' ELSE 'N' END rowCellMergeYn /* 셀 병합 여부 */
+						,CASE WHEN MOD(ROW_NUMBER() OVER() - 1, 4) = 0 THEN (CASE WHEN TRUNC((COUNT(*) OVER() - ROW_NUMBER() OVER() - 1) / 4) <> 0 THEN 4 ELSE MOD((COUNT(*) OVER()), 4) END) ELSE 1 END rowCellMergeCnt /* 셀 병합 카운트 */
+						FROM(SELECT DISTINCT
+							A.INDV_CLUS_RCV_ID indvClusRcvId /* 수신ID */
+							,C.CLUS_ITM_CD clusItmCd /* 약관항목코드 */
+							,D.INSKND_CD inskndCd /* 보종코드 */
+							,B.CLUS_ITM_NM clusItmNm /* 주계약/특약명 */
+							,B.SBSCRB_YN sbscrbYn /* 주/특약가입 */
+							,C.SN sn /* 순번 */
+						FROM TB_INDV_CLUS_RCV_MST A
+							LEFT JOIN TB_INDV_CLUS_RCV_DTL B ON A.INDV_CLUS_RCV_ID = B.INDV_CLUS_MXTR_ID
+							LEFT JOIN TB_CLUS_ITM_SET_MST C ON B.CLUS_ITM_CD = C.CLUS_ITM_CD
+							LEFT JOIN TB_PRDT_INFO_CHG_LST D ON C.CLUS_ITM_CD = D.PRDT_CD
+						WHERE 1=1
+						AND A.INDV_CLUS_RCV_ID = #{indvClusRcvId}
+						AND C.PRDT_CD = #{prdtCd}
+						ORDER BY C.SN) T
+				]]>
+			</when>
+			<when test='databaseId == "db2"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusResHisDtlList_TB_INDV_CLUS_RCV_DTL*/
+					SELECT T.*
+						,CASE WHEN MOD(ROW_NUMBER() OVER() - 1, 4) = 0 THEN 'Y' ELSE 'N' END rowCellMergeYn /* 셀 병합 여부 */
+						,CASE WHEN MOD(ROW_NUMBER() OVER() - 1, 4) = 0 THEN (CASE WHEN TRUNC((COUNT(*) OVER() - ROW_NUMBER() OVER() - 1) / 4) <> 0 THEN 4 ELSE MOD((COUNT(*) OVER()), 4) END) ELSE 1 END rowCellMergeCnt /* 셀 병합 카운트 */
+						FROM(SELECT DISTINCT
+							A.INDV_CLUS_RCV_ID indvClusRcvId /* 수신ID */
+							,C.CLUS_ITM_CD clusItmCd /* 약관항목코드 */
+							,D.INSKND_CD inskndCd /* 보종코드 */
+							,B.CLUS_ITM_NM clusItmNm /* 주계약/특약명 */
+							,B.SBSCRB_YN sbscrbYn /* 주/특약가입 */
+							,C.SN sn /* 순번 */
+						FROM TB_INDV_CLUS_RCV_MST A
+							LEFT JOIN TB_INDV_CLUS_RCV_DTL B ON A.INDV_CLUS_RCV_ID = B.INDV_CLUS_MXTR_ID
+							LEFT JOIN TB_CLUS_ITM_SET_MST C ON B.CLUS_ITM_CD = C.CLUS_ITM_CD
+							LEFT JOIN TB_PRDT_INFO_CHG_LST D ON C.CLUS_ITM_CD = D.PRDT_CD
+						WHERE 1=1
+						AND A.INDV_CLUS_RCV_ID = #{indvClusRcvId}
+						AND C.PRDT_CD = #{prdtCd}
+						ORDER BY C.SN) T
+				]]>
+			</when>
+			<when test='databaseId == "mysql"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusResHisDtlList_TB_INDV_CLUS_RCV_DTL*/
+					SELECT T.*
+					,CASE WHEN MOD(ROW_NUMBER() OVER() - 1, 4) = 0 THEN 'Y' ELSE 'N' END rowCellMergeYn /* 셀 병합 여부 */
+					,CASE WHEN MOD(ROW_NUMBER() OVER() - 1, 4) = 0 THEN (CASE WHEN TRUNCATE((COUNT(*) OVER()) / 4, 0) <> 0 THEN 4 ELSE MOD((COUNT(*) OVER()), 4) END) ELSE 1 END rowCellMergeCnt /* 셀 병합 카운트 */
+					FROM(SELECT DISTINCT
+							A.INDV_CLUS_RCV_ID indvClusRcvId /* 수신ID */
+							,C.CLUS_ITM_CD clusItmCd /* 약관항목코드 */
+							,D.INSKND_CD inskndCd /* 보종코드 */
+							,B.CLUS_ITM_NM clusItmNm /* 주계약/특약명 */
+							,B.SBSCRB_YN sbscrbYn /* 주/특약가입 */
+							,C.SN sn /* 순번 */
+						FROM TB_INDV_CLUS_RCV_MST A
+							LEFT JOIN TB_INDV_CLUS_RCV_DTL B ON A.INDV_CLUS_RCV_ID = B.INDV_CLUS_MXTR_ID
+							LEFT JOIN TB_CLUS_ITM_SET_MST C ON B.CLUS_ITM_CD = C.CLUS_ITM_CD
+							LEFT JOIN TB_PRDT_INFO_CHG_LST D ON C.CLUS_ITM_CD = D.PRDT_CD
+						WHERE 1=1
+						AND A.INDV_CLUS_RCV_ID = #{indvClusRcvId}
+						AND C.PRDT_CD = #{prdtCd}
+						ORDER BY C.SN) T
+				]]>
+			</when>
+			<when test='databaseId == "sqlserver"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusResHisDtlList_TB_INDV_CLUS_RCV_DTL*/
+					SELECT T.*
+					,CASE WHEN ((ROW_NUMBER() OVER(ORDER BY T.sn) - 1) % 4) = 0 THEN 'Y' ELSE 'N' END rowCellMergeYn /* 셀 병합 여부 */
+					,CASE WHEN ((ROW_NUMBER() OVER(ORDER BY T.sn) - 1) % 4) = 0 THEN (CASE WHEN ROUND((COUNT(*) OVER() - ROW_NUMBER() OVER(ORDER BY T.sn) - 1) / 4, 1) <> 0 THEN 4 ELSE ((COUNT(*) OVER()) % 4) END) ELSE 1 END rowCellMergeCnt /* 셀 병합 카운트 */
+					FROM(SELECT DISTINCT
+							A.INDV_CLUS_RCV_ID indvClusRcvId /* 수신ID */
+							,C.CLUS_ITM_CD clusItmCd /* 약관항목코드 */
+							,D.INSKND_CD inskndCd /* 보종코드 */
+							,B.CLUS_ITM_NM clusItmNm /* 주계약/특약명 */
+							,B.SBSCRB_YN sbscrbYn /* 주/특약가입 */
+							,C.SN sn /* 순번 */
+						FROM TB_INDV_CLUS_RCV_MST A
+							LEFT JOIN TB_INDV_CLUS_RCV_DTL B ON A.INDV_CLUS_RCV_ID = B.INDV_CLUS_MXTR_ID
+							LEFT JOIN TB_CLUS_ITM_SET_MST C ON B.CLUS_ITM_CD = C.CLUS_ITM_CD
+							LEFT JOIN TB_PRDT_INFO_CHG_LST D ON C.CLUS_ITM_CD = D.PRDT_CD
+						WHERE 1=1
+						AND A.INDV_CLUS_RCV_ID = #{indvClusRcvId}
+						AND C.PRDT_CD = #{prdtCd}
+						) T
+				]]>
+			</when>
+		</choose>
+	</select>
+
+	<!-- 약관내보내기이력 조회 -->
+	<select id="selectClusMergeHisListTB_INDV_CLUS_MERGEADD_INF"
+		parameterType="com.cgmoffice.api.cuc.dto.SearchClusMergeHisDto"
+		resultType="com.cgmoffice.api.cuc.dto.ClusMergeHisDto"
+	>
+		<choose>
+			<when test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusMergeHisListTB_INDV_CLUS_MERGEADD_INF*/
+					SELECT *
+					FROM(SELECT DISTINCT
+							TO_CHAR(B.CRT_DTM, 'YYYY-MM-DD') rcmYmd /* 합본생성일자 */
+							,D.CD_NM cmpnyNm /* 보험회사 */
+							,A.MXTR_CLUS_CD || '-' || A.CONT_YMD mxtrClusCd /* 약관번호 */
+							,SUBSTR(A.CONT_YMD, 1, 4) || '-' || SUBSTR(A.CONT_YMD, 5, 2) || '-' || SUBSTR(A.CONT_YMD, 7, 2) contYmd /* 계약일자 */
+							,C.INSKND_CD inskndCd /* 보종코드 */
+							,B.CLUS_NM clusNm /* 약관명 (상품명) */
+							,B.INDV_CLUS_MXTR_ID indvClusMxtrId /* 개별약관조합ID */
+							,B.INDV_CLUS_MERGEADD_ID indvClusMergeaddId /* 개별약관합본첨부ID */
+							,B.CRT_DTM crtDtm /* 생성일자 */
+						FROM TB_INDV_CLUS_RCV_MST A
+						INNER JOIN TB_INDV_CLUS_MERGEADD_INF B ON ((A.MXTR_CLUS_CD || '-' || A.CONT_YMD) = B.INDV_CLUS_MXTR_ID)
+						LEFT JOIN TB_PRDT_INFO_CHG_LST C ON COALESCE(REGEXP_SUBSTR(A.MXTR_CLUS_CD,'[^-]+', 1, 1), '') = C.PRDT_CD
+						LEFT JOIN TB_DTL_CD D ON D.CD = A.CMPNY_CD
+						ORDER BY B.CRT_DTM DESC) T
+					WHERE 1=1
+				]]>
+					<if test='cmpnyNm != null and cmpnyNm != ""'>
+						AND T.cmpnyNm LIKE '%' || #{cmpnyNm} || '%'
+
+						<if test='cmpnyNm != null and cmpnyNm.contains("\\")'>
+							ESCAPE '\'
+						</if>
+					</if>
+					<if test='clusNm != null and clusNm != ""'>
+						AND T.clusNm LIKE '%' || #{clusNm} || '%'
+
+						<if test='clusNm != null and clusNm.contains("\\")'>
+							ESCAPE '\'
+						</if>
+					</if>
+					<if test='rcmYmd != null and rcmYmd != ""'>
+						AND REPLACE(T.rcmYmd, '-', '') = #{rcmYmd}
+					</if>
+			</when>
+			<when test='databaseId == "sqlserver"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusMergeHisListTB_INDV_CLUS_MERGEADD_INF*/
+					SELECT *
+					FROM(SELECT DISTINCT
+							FORMAT(B.CRT_DTM, 'yyyy-MM-dd') rcmYmd /* 합본생성일자 */
+							,D.CD_NM cmpnyNm /* 보험회사 */
+							,CONCAT(A.MXTR_CLUS_CD, '-', A.CONT_YMD) mxtrClusCd /* 약관번호 */
+							,CONCAT(SUBSTRING(A.CONT_YMD, 1, 4), '-', SUBSTRING(A.CONT_YMD, 5, 2), '-', SUBSTRING(A.CONT_YMD, 7, 2)) contYmd /* 계약일자 */
+							,C.INSKND_CD inskndCd /* 보종코드 */
+							,B.CLUS_NM clusNm /* 약관명 (상품명) */
+							,B.INDV_CLUS_MXTR_ID indvClusMxtrId /* 개별약관조합ID */
+							,B.INDV_CLUS_MERGEADD_ID indvClusMergeaddId /* 개별약관합본첨부ID */
+							,B.CRT_DTM crtDtm /* 생성일자 */
+						FROM TB_INDV_CLUS_RCV_MST A
+						INNER JOIN TB_INDV_CLUS_MERGEADD_INF B ON (CONCAT(A.MXTR_CLUS_CD, '-', A.CONT_YMD) = B.INDV_CLUS_MXTR_ID)
+						LEFT JOIN TB_PRDT_INFO_CHG_LST C ON COALESCE(SUBSTRING(A.MXTR_CLUS_CD, 0, CHARINDEX('-', A.MXTR_CLUS_CD)), '') = C.PRDT_CD
+						LEFT JOIN TB_DTL_CD D ON D.CD = A.CMPNY_CD
+						) T
+					WHERE 1=1
+				]]>
+					<if test='cmpnyNm != null and cmpnyNm != ""'>
+						AND T.cmpnyNm LIKE CONCAT('%', #{cmpnyNm}, '%')
+
+						<if test='clusNm != null and clusNm.contains("\\")'>
+							ESCAPE '\'
+						</if>
+					</if>
+					<if test='clusNm != null and clusNm != ""'>
+						AND T.clusNm LIKE CONCAT('%', #{clusNm}, '%')
+
+						<if test='clusNm != null and clusNm.contains("\\")'>
+							ESCAPE '\'
+						</if>
+					</if>
+					<if test='rcmYmd != null and rcmYmd != ""'>
+						AND REPLACE(T.rcmYmd, '-', '') = #{rcmYmd}
+					</if>
+			</when>
+			<when test='databaseId == "mysql"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusMergeHisListTB_INDV_CLUS_MERGEADD_INF*/
+					SELECT *
+					FROM(SELECT DISTINCT
+							DATE_FORMAT(B.CRT_DTM, '%Y-%m-%d') rcmYmd /* 합본생성일자 */
+							,D.CD_NM cmpnyNm /* 보험회사 */
+							,CONCAT(A.MXTR_CLUS_CD, '-', A.CONT_YMD) mxtrClusCd /* 약관번호 */
+							,CONCAT(SUBSTR(A.CONT_YMD, 1, 4), '-', SUBSTR(A.CONT_YMD, 5, 2), '-', SUBSTR(A.CONT_YMD, 7, 2)) contYmd /* 계약일자 */
+							,C.INSKND_CD inskndCd /* 보종코드 */
+							,B.CLUS_NM clusNm /* 약관명 (상품명) */
+							,B.INDV_CLUS_MXTR_ID indvClusMxtrId /* 개별약관조합ID */
+							,B.INDV_CLUS_MERGEADD_ID indvClusMergeaddId /* 개별약관합본첨부ID */
+							,B.CRT_DTM crtDtm /* 생성일자 */
+						FROM TB_INDV_CLUS_RCV_MST A
+						INNER JOIN TB_INDV_CLUS_MERGEADD_INF B ON (CONCAT(A.MXTR_CLUS_CD, '-', A.CONT_YMD) = B.INDV_CLUS_MXTR_ID)
+						LEFT JOIN TB_PRDT_INFO_CHG_LST C ON COALESCE(REGEXP_SUBSTR(A.MXTR_CLUS_CD,'[^-]+', 1, 1), '') = C.PRDT_CD
+						LEFT JOIN TB_DTL_CD D ON D.CD = A.CMPNY_CD
+						ORDER BY B.CRT_DTM DESC) T
+					WHERE 1=1
+				]]>
+					<if test='cmpnyNm != null and cmpnyNm != ""'>
+						AND T.cmpnyNm LIKE CONCAT('%', #{cmpnyNm}, '%')
+
+						<if test='cmpnyNm != null and cmpnyNm.contains("\\\\")'>
+							ESCAPE '\\'
+						</if>
+					</if>
+					<if test='clusNm != null and clusNm != ""'>
+						AND T.clusNm LIKE CONCAT('%', #{clusNm}, '%')
+
+						<if test='clusNm != null and clusNm.contains("\\\\")'>
+							ESCAPE '\\'
+						</if>
+					</if>
+					<if test='rcmYmd != null and rcmYmd != ""'>
+						AND REPLACE(T.rcmYmd, '-', '') = #{rcmYmd}
+					</if>
+			</when>
+		</choose>
+	</select>
+
+	<!-- 약관텍스트정보내역 조회 -->
+	<select id="selectClusMergeTxtHisListTB_INDV_CLUS_MERGE_INF"
+		parameterType="com.cgmoffice.api.cuc.dto.SearchClusMergeTxtHisDto"
+		resultType="com.cgmoffice.api.cuc.dto.ClusMergeTxtHisDto"
+	>
+		<choose>
+			<when test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+			<![CDATA[
+				/*api.cuc.clusCd.selectClusMergeTxtHisListTB_INDV_CLUS_MERGE_INF*/
+				SELECT *
+				FROM(SELECT DISTINCT
+						TO_CHAR(B.CRT_DTM, 'YYYY-MM-DD') rcmYmd /* 합본생성일자 */
+						,(SELECT CD_NM FROM TB_DTL_CD
+								WHERE CD = A.CMPNY_CD
+								AND GRP_CD = 'CMPNY_CODE') cmpnyNm /* 보험회사 */
+						,B.INDV_CLUS_MXTR_ID indvClusMxtrId /* 약관번호 */
+						,SUBSTR(A.CONT_YMD, 1, 4) || '-' || SUBSTR(A.CONT_YMD, 5, 2) || '-' || SUBSTR(A.CONT_YMD, 7, 2) contYmd /* 계약일자 */
+						,C.INSKND_CD inskndCd /* 보종코드 */
+						,C.NPRDT_NM nprdtNm /* 약관명 (상품명) */
+						,B.INDV_CLUS_MERGEADD_ID indvClusMergeaddId /* 개별약관합본첨부ID */
+						,B.CRT_DTM crtDtm /* 생성일자 */
+					FROM TB_INDV_CLUS_RCV_MST A
+					INNER JOIN TB_INDV_CLUS_MERGE_INF B ON ((A.MXTR_CLUS_CD || '-' || A.CONT_YMD) = B.INDV_CLUS_MXTR_ID)
+					INNER JOIN TB_PRDT_INFO_CHG_LST C ON COALESCE(REGEXP_SUBSTR(A.MXTR_CLUS_CD,'[^-]+', 1, 1), '') = C.PRDT_CD
+					ORDER BY B.CRT_DTM DESC) T
+				WHERE 1=1
+			]]>
+				<if test='cmpnyNm != null and cmpnyNm != ""'>
+					AND T.cmpnyNm LIKE '%' || #{cmpnyNm} || '%'
+				</if>
+				<if test='nprdtNm != null and nprdtNm != ""'>
+					AND T.nprdtNm LIKE '%' || #{nprdtNm} || '%'
+				</if>
+				<if test='rcmYmd != null and rcmYmd != ""'>
+					AND REPLACE(T.rcmYmd, '-', '') = #{rcmYmd}
+				</if>
+		</when>
+		<when test='databaseId == "sqlserver"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusMergeHisListTB_INDV_CLUS_MERGEADD_INF*/
+					SELECT *
+					FROM(SELECT DISTINCT
+							FORMAT(B.CRT_DTM, 'yyyy-MM-dd') rcmYmd /* 합본생성일자 */
+							,(SELECT CD_NM FROM TB_DTL_CD
+									WHERE CD = A.CMPNY_CD
+									AND GRP_CD = 'CMPNY_CODE') cmpnyNm /* 보험회사 */
+							,B.INDV_CLUS_MXTR_ID indvClusMxtrId /* 약관번호 */
+							,CONCAT(SUBSTRING(A.CONT_YMD, 1, 4), '-', SUBSTRING(A.CONT_YMD, 5, 2), '-', SUBSTRING(A.CONT_YMD, 7, 2)) contYmd /* 계약일자 */
+							,C.INSKND_CD inskndCd /* 보종코드 */
+							,C.NPRDT_NM nprdtNm /* 약관명 (상품명) */
+							,B.INDV_CLUS_MERGEADD_ID indvClusMergeaddId /* 개별약관합본첨부ID */
+							,B.CRT_DTM crtDtm /* 생성일자 */
+						FROM TB_INDV_CLUS_RCV_MST A
+						INNER JOIN TB_INDV_CLUS_MERGE_INF B ON (CONCAT(A.MXTR_CLUS_CD, '-', A.CONT_YMD) = B.INDV_CLUS_MXTR_ID)
+						INNER JOIN TB_PRDT_INFO_CHG_LST C ON COALESCE(SUBSTRING(A.MXTR_CLUS_CD, 0, CHARINDEX('-', A.MXTR_CLUS_CD)), '') = C.PRDT_CD
+						) T
+					WHERE 1=1
+				]]>
+					<if test='cmpnyNm != null and cmpnyNm != ""'>
+						AND T.cmpnyNm LIKE CONCAT('%', #{cmpnyNm}, '%')
+					</if>
+					<if test='nprdtNm != null and nprdtNm != ""'>
+						AND T.nprdtNm LIKE CONCAT('%', #{nprdtNm}, '%')
+					</if>
+					<if test='rcmYmd != null and rcmYmd != ""'>
+						AND REPLACE(T.rcmYmd, '-', '') = #{rcmYmd}
+					</if>
+			</when>
+			<when test='databaseId == "mysql"'>
+				<![CDATA[
+					/*api.cuc.clusCd.selectClusMergeHisListTB_INDV_CLUS_MERGEADD_INF*/
+					SELECT *
+					FROM(SELECT DISTINCT
+							DATE_FORMAT(B.CRT_DTM, '%Y-%m-%d') rcmYmd /* 합본생성일자 */
+							,(SELECT CD_NM FROM TB_DTL_CD
+									WHERE CD = A.CMPNY_CD
+									AND GRP_CD = 'CMPNY_CODE') cmpnyNm /* 보험회사 */
+							,B.INDV_CLUS_MXTR_ID indvClusMxtrId /* 약관번호 */
+							,CONCAT(SUBSTR(A.CONT_YMD, 1, 4), '-', SUBSTR(A.CONT_YMD, 5, 2), '-', SUBSTR(A.CONT_YMD, 7, 2)) contYmd /* 계약일자 */
+							,C.INSKND_CD inskndCd /* 보종코드 */
+							,C.NPRDT_NM nprdtNm /* 약관명 (상품명) */
+							,B.INDV_CLUS_MERGEADD_ID indvClusMergeaddId /* 개별약관합본첨부ID */
+							,B.CRT_DTM crtDtm /* 생성일자 */
+						FROM TB_INDV_CLUS_RCV_MST A
+						INNER JOIN TB_INDV_CLUS_MERGE_INF B ON (CONCAT(A.MXTR_CLUS_CD, '-', A.CONT_YMD) = B.INDV_CLUS_MXTR_ID)
+						INNER JOIN TB_PRDT_INFO_CHG_LST C ON COALESCE(REGEXP_SUBSTR(A.MXTR_CLUS_CD,'[^-]+', 1, 1), '') = C.PRDT_CD
+						ORDER BY B.CRT_DTM DESC) T
+					WHERE 1=1
+				]]>
+					<if test='cmpnyNm != null and cmpnyNm != ""'>
+						AND T.cmpnyNm LIKE CONCAT('%', #{cmpnyNm}, '%')
+					</if>
+					<if test='nprdtNm != null and nprdtNm != ""'>
+						AND T.nprdtNm LIKE CONCAT('%', #{nprdtNm}, '%')
+					</if>
+					<if test='rcmYmd != null and rcmYmd != ""'>
+						AND REPLACE(T.rcmYmd, '-', '') = #{rcmYmd}
+					</if>
+			</when>
+		</choose>
+	</select>
+
+	<!-- 약관텍스트정보내역 조회 (CLOB 필드 내용만 별도로 조회) -->
+	<select id="selectClusMergeTxtHisListTB_INDV_CLUS_MERGE_INF_TXT_TEXT"
+		parameterType="com.cgmoffice.api.cuc.dto.ClusMergeTxtHisDto"
+		resultType="string"
+	>
+		SELECT TXT_TEXT txtText /* 텍스트 내용 */
+		FROM TB_INDV_CLUS_MERGE_INF
+		WHERE INDV_CLUS_MERGEADD_ID = #{indvClusMergeaddId}
+		AND INDV_CLUS_MXTR_ID = #{indvClusMxtrId}
+	</select>
+
+</mapper>

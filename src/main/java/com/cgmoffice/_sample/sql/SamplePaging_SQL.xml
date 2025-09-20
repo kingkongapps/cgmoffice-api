@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='sample.samplePaging'>
+
+	<select id="getList"
+		parameterType="com.cgmoffice._sample.dto.PagingTestDto"
+		resultType="com.cgmoffice._sample.dto.Test01Dto"
+	>
+		SELECT
+			A.IDX
+			,A.USER_NAME
+			,A.USER_AGE
+		FROM SAMPLE_TEST01 A
+		WHERE 1=1
+		<if test='userName != null and userName != ""'>
+			AND A.USER_NAME LIKE '%' || #{userName} || '%'
+		</if>
+	</select>
+
+</mapper>

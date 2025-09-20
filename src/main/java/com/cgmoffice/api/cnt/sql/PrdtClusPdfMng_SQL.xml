@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.cnt.prdtcluspdfmng'>
+
+	<select id="getList_TB_CM_FILE"
+		parameterType="com.cgmoffice.api.cnt.dto.SearchPrdClusPdfDto"
+		resultType="com.cgmoffice.api.common.dto.FileInfoDto"
+	>
+	/* api.cnt.prdtcluspdfmng.getList_TB_CM_FILE */
+		SELECT
+			A.FILE_GRP_NO  fileGrpNo     /* 파일그룹ID */
+			,A.FILE_NO     fileNo   /* 파일ID */
+			,A.FILE_NM     fileNm   /* 파일명 */
+			,A.FILE_GB     fileGb   /* 타입코드 */
+			,A.REF_NO      refNo    /* 참조번호 */
+			,A.SORT_NO     sortNo   /* 정렬순서 */
+			,A.FILE_SIZE   fileSize /* 파일용량 */
+			,A.FILE_EXT    fileExt  /* 파일확장자 */
+			,A.FILE_TYPE   fileType /* 파일타입 */
+			,A.FILE_PATH   filePath /* 저장파일물리경로 */
+			,A.RM          rm        /* 비고 */
+			,A.DEL_YN      delYn    /* 삭제여부 */
+			,A.CRT_DTM     crtDtm   /* 생성일시 */
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtmChar   /* 생성일시 */
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s') AS crtDtmChar   /* 생성일시 */
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(A.CRT_DTM, 'yyyy-MM-dd HH:mm:ss') AS crtDtmChar   /* 생성일시 */
+			</if>
+			,A.MDF_DTM     mdfDtm   /* 수정일시 */
+			,A.CRTR        crtr      /* 생성자 */
+			,A.AMDR        amdr      /* 수정자 */
+		FROM
+			TB_CM_FILE A
+		WHERE 1=1
+			AND A.DEL_YN = 'N'
+			AND A.RM = 'CLUS'
+		<if test='fileNm != null and fileNm != ""'>
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				AND A.FILE_NM LIKE '%' || #{fileNm} || '%'
+
+				<if test='fileNm != null and fileNm.contains("\\")'>
+					ESCAPE '\'
+				</if>
+			</if>
+			<if test='dbDriverId == "mysql" or dbDriverId == "sqlserver"'>
+				AND A.FILE_NM LIKE CONCAT('%', #{fileNm}, '%')
+
+				<if test='dbDriverId == "mysql"'>
+					<if test='fileNm != null and fileNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+				</if>
+				<if test='dbDriverId == "sqlserver"'>
+					<if test='fileNm != null and fileNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+				</if>
+			</if>
+		</if>
+		<if test='comCode != null and comCode != ""'>
+			<if test='comCode != "CMMN" and memId != null and memId != ""'>
+				AND A.CRTR = #{memId}
+			</if>
+		</if>
+	</select>
+
+	<select id="chkExist_TB_PRDT_INFO_CHG_LST"
+		parameterType="string"
+		resultType="int"
+	>
+	/* api.cnt.prdtcluspdfmng.chkExist_TB_PRDT_INFO_CHG_LST */
+		SELECT
+			COUNT(*)
+		FROM
+			TB_PRDT_INFO_CHG_LST A
+		WHERE 1=1
+			AND A.FILE_NO = #{fileNo}
+	</select>
+
+	<update id="updatePrdtFileNo_TB_PRDT_INFO_CHG_LST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+	>
+	/* api.cnt.prdtcluspdfmng.updatePrdtFileNo_TB_PRDT_INFO_CHG_LST */
+		UPDATE TB_PRDT_INFO_CHG_LST SET
+			FILE_NO = #{fileNo}
+		WHERE 1=1
+			AND PRDT_CD = #{prdtCd}
+			AND PRDT_CHG_YMD = #{prdtChgYmd}
+	</update>
+
+	<update id="updatePrdtFileNo_TB_CLUS_ITM_SET_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+	>
+	/* api.cnt.prdtcluspdfmng.updatePrdtFileNo_TB_CLUS_ITM_SET_MST */
+		UPDATE TB_CLUS_ITM_SET_MST SET
+			FILE_NO = #{fileNo}
+			,DATA_TRANS_STTCD = 'S'  /* S:전송대기, Y:전송성공, N:전송실패, F:시스템오류 */
+		WHERE 1=1
+			AND CLUS_ITM_CD = #{prdtCd}
+	</update>
+
+
+	<insert id="insertLog_TB_INDV_CLUS_RCV_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.IndvClusRcvMstDto"
+	>
+	/* api.cnt.prdtcluspdfmng.insertLog_TB_INDV_CLUS_RCV_MST */
+		INSERT INTO TB_INDV_CLUS_RCV_MST (
+			INDV_CLUS_RCV_ID
+			,MXTR_CLUS_CD
+			,RCM_YMD
+			,CMPNY_CD
+			,SNDURL
+			,CONT_YMD
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,UPDUSR
+		) VALUES (
+			#{indvClusMxtrId}
+			,#{mxtrClusCd}
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD')
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d')
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd')
+			</if>
+			,#{cmpnyCd}
+			,#{sndurl}
+			,#{contYmd}
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{updusr}
+		)
+	</insert>
+
+
+	<insert id="insertLog_TB_INDV_CLUS_RCV_DTL"
+		parameterType="com.cgmoffice.api.cnt.dto.IndvClusRcvDtlDto"
+	>
+	/* api.cnt.prdtcluspdfmng.insertLog_TB_INDV_CLUS_RCV_DTL */
+		INSERT INTO TB_INDV_CLUS_RCV_DTL (
+			INDV_CLUS_MXTR_ID
+			,CLUS_ITM_CD
+			,CLUS_ITM_NM
+			,SBSCRB_YN
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,UPDUSR
+		) VALUES (
+			#{indvClusMxtrId}
+			,#{clusItmCd}
+			,#{clusItmNm}
+			,#{sbscrbYn}
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{updusr}
+		)
+	</insert>
+
+	<insert id="insertInfo_TB_INDV_CLUS_MERGEADD_INF"
+		parameterType="com.cgmoffice.api.cnt.dto.IndvClusMergeaddInfDto"
+	>
+	/* api.cnt.prdtcluspdfmng.insertInfo_TB_INDV_CLUS_MERGEADD_INF */
+		INSERT INTO TB_INDV_CLUS_MERGEADD_INF (
+			INDV_CLUS_MERGEADD_ID
+			,INDV_CLUS_MXTR_ID
+			,CLUS_NM
+			,FILE_ATCH_DIR
+			,EMAL_SND_YN
+			,EMAL_ADR
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,UPDUSR
+		) VALUES (
+			#{indvClusMergeaddId}
+			,#{indvClusMxtrId}
+			,#{clusNm}
+			,#{fileAtchDir}
+			,#{emalSndYn}
+			,#{emalAdr}
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{updusr}
+		)
+	</insert>
+
+	<insert id="insertInfo_TB_INDV_CLUS_MERGE_INF"
+		parameterType="com.cgmoffice.api.cnt.dto.IndvClusMergeaddInfDto"
+	>
+	/* api.cnt.prdtcluspdfmng.insertInfo_TB_INDV_CLUS_MERGE_INF */
+		INSERT INTO TB_INDV_CLUS_MERGE_INF (
+			INDV_CLUS_MERGEADD_ID
+			,INDV_CLUS_MXTR_ID
+			,FILE_ATCH_DIR
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,UPDUSR
+			,TXT_TEXT
+		) VALUES (
+			#{indvClusMergeaddId}
+			,#{indvClusMxtrId}
+			,#{fileAtchDir}
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{updusr}
+			,#{txtText}
+		)
+	</insert>
+</mapper>

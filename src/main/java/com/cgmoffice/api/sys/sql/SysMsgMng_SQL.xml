@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.SysMsgMng'>
+
+	<!-- 시스템메시지 목록 조회 -->
+	<select id="getListPage_TB_MSG"
+		parameterType="com.cgmoffice.api.sys.dto.SearchSysMsgDto"
+		resultType="com.cgmoffice.api.sys.dto.SysMsgDto"
+	>
+	/*api.sys.SysMsgMng.getListPage_TB_MSG*/
+		SELECT
+			A.MSG_ID msgId /* 메시지ID */
+			,A.MSG_NM msgNm /* 메시지명 */
+			,A.MSG_TYPE msgType /* 메시지유형 */
+			,B.CD_NM  cdNm /* 상세코드명 */
+			,A.MSG_DESC msgDesc /* 메시지상세 */
+			,A.CRT_DTM crtDtm /* 생성일시 */
+		FROM TB_MSG A
+			LEFT JOIN TB_DTL_CD B
+			ON B.GRP_CD = 'MSG_TYPE'
+			AND A.MSG_TYPE = B.CD
+		WHERE 1=1
+			AND A.DEL_YN = 'N'
+		<if test='msgType != null and msgType != ""'>
+			<choose>
+				<when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+					AND A.MSG_TYPE LIKE '%' || UPPER(#{msgType}) || '%'
+					<if test='msgType != null and msgType.contains("\\")'>
+						ESCAPE '\'
+					</if>
+				</when>
+				<when test="databaseId == 'mysql'">
+					AND A.MSG_TYPE LIKE CONCAT('%', UPPER(#{msgType}), '%')
+					<if test='msgType != null and msgType.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+				</when>
+				<when test="databaseId == 'sqlserver'">
+					AND A.MSG_TYPE LIKE '%' + UPPER(#{msgType}) + '%'
+					<if test='msgType != null and msgType.contains("\\")'>
+						ESCAPE '\'
+					</if>
+				</when>
+				<otherwise>
+					AND A.MSG_TYPE LIKE '%'|| UPPER(#{msgType}) || '%'
+					<if test='msgType != null and msgType.contains("\\")'>
+						ESCAPE '\'
+					</if>
+				</otherwise>
+			</choose>
+		</if>
+		<if test='msgNm != null and msgNm != ""'>
+			<choose>
+				<when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+					AND A.MSG_NM LIKE '%' || #{msgNm} || '%'
+					<if test='msgNm != null and msgNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+				</when>
+				<when test="databaseId == 'mysql'">
+					AND A.MSG_NM LIKE CONCAT('%', #{msgNm}, '%')
+					<if test='msgNm != null and msgNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+				</when>
+				<when test="databaseId == 'sqlserver'">
+					AND A.MSG_NM LIKE '%' + #{msgNm} + '%'
+					<if test='msgNm != null and msgNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+				</when>
+				<otherwise>
+					AND A.MSG_NM LIKE '%'|| #{msgNm} || '%'
+					<if test='msgNm != null and msgNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+				</otherwise>
+			</choose>
+		</if>
+	</select>
+
+	<!-- 시스템메시지 선택삭제 -->
+	<update id="delete_TB_MSG"
+		parameterType="com.cgmoffice.api.sys.dto.SysMsgDto"
+	>
+	/* api.sys.SysMsgMng.delete_TB_MSG */
+		UPDATE TB_MSG
+			SET DEL_YN = 'Y',
+				MDF_DTM = CURRENT_TIMESTAMP,
+				AMDR = #{memId}
+		WHERE 1=1
+			AND MSG_ID = #{msgId}
+	</update>
+
+	<!-- 시스템메시지 신규등록 -->
+	<insert id="insert_TB_MSG"
+		parameterType="com.cgmoffice.api.sys.dto.SysMsgDto"
+	>
+	/* api.sys.SysMsgMng.insert_TB_MSG */
+		INSERT INTO TB_MSG(
+			MSG_ID, /* 메시지ID */
+			MSG_NM, /* 메시지명 */
+			MSG_TYPE, /* 메시지유형 */
+			MSG_DESC, /* 메시지상세 */
+			DEL_YN, /* 삭제여부 */
+			CRT_DTM, /* 생성일시 */
+			MDF_DTM, /* 수정일시 */
+			CRTR, /* 생성자 */
+			AMDR /* 수정자 */
+		)VALUES(
+			UPPER(#{msgId}),
+			#{msgNm},
+			UPPER(#{msgType}),
+			#{msgDesc},
+			'N',
+			CURRENT_TIMESTAMP,
+			CURRENT_TIMESTAMP,
+			#{memId},
+			#{memId}
+		)
+	</insert>
+
+	<!-- 시스템메시지 수정저장 -->
+ 	<update id="update_TB_MSG"
+		parameterType="com.cgmoffice.api.sys.dto.SysMsgDto"
+ 	>
+	/* api.sys.SysMsgMng.update_TB_MSG */
+	 	UPDATE TB_MSG
+			SET MSG_NM = #{msgNm},
+				MSG_DESC = #{msgDesc},
+				MDF_DTM = CURRENT_TIMESTAMP,
+				AMDR = #{memId}
+		WHERE MSG_ID = #{msgId}
+ 	</update>
+
+
+	<!-- 시스템메시지 중복확인 -->
+	<select id="selectMsgIdYn_TB_MSG"
+		parameterType="com.cgmoffice.api.sys.dto.SysMsgDto"
+		resultType="String"
+	>
+	/* api.sys.SysMsgMng.selectMsgIdYn_TB_MSG */
+		<choose>
+
+		<!-- Oracle -->
+		<when test="databaseId == 'oracle'">
+		<![CDATA[
+			/* oracle */
+			SELECT CASE
+				WHEN EXISTS (
+					SELECT 1 FROM TB_MSG A WHERE A.MSG_ID = UPPER(#{msgId}) AND A.DEL_YN = 'N'
+				) THEN 'N'
+				WHEN EXISTS (
+					SELECT 1 FROM TB_MSG A WHERE A.MSG_ID = UPPER(#{msgId}) AND A.DEL_YN = 'Y'
+				) THEN 'D'
+				ELSE 'Y'
+				END AS result
+			FROM dual
+			]]>
+		</when>
+
+		<!-- DB2 -->
+		<when test="databaseId == 'db2'">
+		<![CDATA[
+			/* db2 */
+			SELECT CASE
+				WHEN EXISTS (
+					SELECT 1 FROM TB_MSG A WHERE A.MSG_ID = UPPER(#{msgId}) AND A.DEL_YN = 'N'
+				) THEN 'N'
+				WHEN EXISTS (
+					SELECT 1 FROM TB_MSG A WHERE A.MSG_ID = UPPER(#{msgId}) AND A.DEL_YN = 'Y'
+				) THEN 'D'
+				ELSE 'Y'
+				END AS result
+			FROM SYSIBM.SYSDUMMY1
+			]]>
+		</when>
+
+		<!-- PostgreSQL, MySQL, SQL Server -->
+		<otherwise>
+		<![CDATA[
+			/* PostgreSQL, MySQL, SQL Server */
+			SELECT CASE
+				WHEN EXISTS (
+					SELECT 1 FROM TB_MSG A WHERE A.MSG_ID = UPPER(#{msgId}) AND A.DEL_YN = 'N'
+				) THEN 'N'
+				WHEN EXISTS (
+					SELECT 1 FROM TB_MSG A WHERE A.MSG_ID = UPPER(#{msgId}) AND A.DEL_YN = 'Y'
+				) THEN 'D'
+				ELSE 'Y'
+				END AS result
+			]]>
+		</otherwise>
+		</choose>
+
+	</select>
+
+</mapper>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.cmFile'>
+
+	<!-- 약관파일 목록 조회 -->
+	<select id="selectFileListPage_TB_CM_FILE"
+		parameterType="com.cgmoffice.api.sys.dto.SearchCmFileHistDto"
+		resultType="com.cgmoffice.api.sys.dto.CmFileHistDto"
+	>
+		/*api.sys.CmFile.selectFileListPage_TB_CM_FILE*/
+		SELECT
+			<!-- <if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				TO_DATE(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm /* 수정일시 */
+			</if>
+			<if test='databaseId == "mysql"'>
+				DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s') mdfDtm /* 수정일시 */
+			</if>
+			<if test='databaseId == "sqlserver"'>
+				FORMAT(CAST(A.MDF_DTM AS DATE), 'yyyy-MM-dd HH:mm:ss') mdfDtm /* 수정일시 */
+			</if> -->
+			A.MDF_DTM mdfDtm /* 수정일시 */
+			,A.FILE_NM fileNm /* 약관파일명 */
+			,A.FILE_NO fileNo /* 약관파일ID */
+			,A.CRTR crtr /* 생성자 */
+			<!-- <if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				,TO_DATE(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm /* 생성일시 */
+			</if>
+			<if test='databaseId == "mysql"'>
+				,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s') crtDtm /* 생성일시 */
+			</if>
+			<if test='databaseId == "sqlserver"'>
+				,FORMAT(CAST(A.CRT_DTM AS DATE), 'yyyy-MM-dd HH:mm:ss') crtDtm /* 생성일시 */
+			</if> -->
+			,A.CRT_DTM crtDtm /* 생성일시 */
+			,A.FILE_GB fileGb /* 타입코드 */
+			,A.SORT_NO sortNo /* 정렬순서 */
+			,A.FILE_SIZE fileSize /* 파일용량 */
+			,A.FILE_EXT fileExt /* 파일확장자 */
+			,A.FILE_TYPE fileType /* 파일타입 */
+			,A.FILE_PATH filePath /* 저장파일물리경로 */
+			,A.RM rm /* 비고 */
+			,A.DEL_YN delYn /* 삭제여부 */
+		FROM TB_CM_FILE A
+		LEFT JOIN TB_PRDT_INFO_CHG_LST B
+		ON A.FILE_NO = B.FILE_NO
+		WHERE 1=1
+		<if test='cmpnyCode != null and cmpnyCode != ""'>
+			AND B.CMPNY_CODE = #{cmpnyCode}
+		</if>
+		<if test='startMdfDtm != null and startMdfDtm != ""'>
+			<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				<![CDATA[
+					AND A.MDF_DTM >= TO_DATE(#{startMdfDtm}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>
+			<if test='databaseId == "mysql"'>
+				<![CDATA[
+					AND A.MDF_DTM >= DATE_FORMAT(#{startMdfDtm}, '%Y-%m-%d %H:%i:%s')
+				]]>
+			</if>
+			<if test='databaseId == "sqlserver"'>
+				<![CDATA[
+					AND A.MDF_DTM >= FORMAT(CAST(#{startMdfDtm} AS DATE), 'yyyy-MM-dd HH:mm:ss')
+				]]>
+			</if>
+		</if>
+		<if test='endMdfDtm != null and endMdfDtm != ""'>
+			<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				<![CDATA[
+					AND A.MDF_DTM <= TO_DATE(#{endMdfDtm}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>
+			<if test='databaseId == "mysql"'>
+				<![CDATA[
+					AND A.MDF_DTM <= DATE_FORMAT(#{endMdfDtm}, '%Y-%m-%d %H:%i:%s')
+				]]>
+			</if>
+			<if test='databaseId == "sqlserver"'>
+				<![CDATA[
+					AND A.MDF_DTM <= FORMAT(CAST(#{endMdfDtm} AS DATE), 'yyyy-MM-dd HH:mm:ss')
+				]]>
+			</if>
+		</if>
+	</select>
+
+	<!-- 약관파일 목록 조회 (엑셀) -->
+	<select id="selectFileList_TB_CM_FILE"
+		parameterType="com.cgmoffice.api.sys.dto.SearchCmFileHistDto"
+		resultType="com.cgmoffice.api.sys.dto.CmFileHistDto"
+	>
+		/*api.sys.CmFile.selectFileList_TB_CM_FILE*/
+		SELECT
+			<!-- <if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				TO_DATE(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm /* 수정일시 */
+			</if>
+			<if test='databaseId == "mysql"'>
+				DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s') mdfDtm /* 수정일시 */
+			</if>
+			<if test='databaseId == "sqlserver"'>
+				FORMAT(CAST(A.MDF_DTM AS DATE), 'yyyy-MM-dd HH:mm:ss') mdfDtm /* 수정일시 */
+			</if> -->
+			A.MDF_DTM mdfDtm /* 수정일시 */
+			,A.FILE_NM fileNm /* 약관파일명 */
+			,A.FILE_NO fileNo /* 약관파일ID */
+			,A.CRTR crtr /* 생성자 */
+			<!-- <if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				,TO_DATE(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm /* 생성일시 */
+			</if>
+			<if test='databaseId == "mysql"'>
+				,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s') crtDtm /* 생성일시 */
+			</if>
+			<if test='databaseId == "sqlserver"'>
+				,FORMAT(CAST(A.CRT_DTM AS DATE), 'yyyy-MM-dd HH:mm:ss') crtDtm /* 생성일시 */
+			</if> -->
+			,A.CRT_DTM crtDtm /* 생성일시 */
+			,A.FILE_GB fileGb /* 타입코드 */
+			,A.SORT_NO sortNo /* 정렬순서 */
+			,A.FILE_SIZE fileSize /* 파일용량 */
+			,A.FILE_EXT fileExt /* 파일확장자 */
+			,A.FILE_TYPE fileType /* 파일타입 */
+			,A.FILE_PATH filePath /* 저장파일물리경로 */
+			,A.RM rm /* 비고 */
+			,A.DEL_YN delYn /* 삭제여부 */
+		FROM TB_CM_FILE A
+		LEFT JOIN TB_PRDT_INFO_CHG_LST B
+		ON A.FILE_NO = B.FILE_NO
+		WHERE 1=1
+		<if test='cmpnyCode != null and cmpnyCode != ""'>
+			AND B.CMPNY_CODE = #{cmpnyCode}
+		</if>
+		<if test='startMdfDtm != null and startMdfDtm != ""'>
+			<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				<![CDATA[
+					AND A.MDF_DTM >= TO_DATE(#{startMdfDtm}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>
+			<if test='databaseId == "mysql"'>
+				<![CDATA[
+					AND A.MDF_DTM >= DATE_FORMAT(#{startMdfDtm}, '%Y-%m-%d %H:%i:%s')
+				]]>
+			</if>
+			<if test='databaseId == "sqlserver"'>
+				<![CDATA[
+					AND A.MDF_DTM >= FORMAT(CAST(#{startMdfDtm} AS DATE), 'yyyy-MM-dd HH:mm:ss')
+				]]>
+			</if>
+		</if>
+		<if test='endMdfDtm != null and endMdfDtm != ""'>
+			<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				<![CDATA[
+					AND A.MDF_DTM <= TO_DATE(#{endMdfDtm}, 'YYYY-MM-DD HH24:MI:SS')
+				]]>
+			</if>
+			<if test='databaseId == "mysql"'>
+				<![CDATA[
+					AND A.MDF_DTM <= DATE_FORMAT(#{endMdfDtm}, '%Y-%m-%d %H:%i:%s')
+				]]>
+			</if>
+			<if test='databaseId == "sqlserver"'>
+				<![CDATA[
+					AND A.MDF_DTM <= FORMAT(CAST(#{endMdfDtm} AS DATE), 'yyyy-MM-dd HH:mm:ss')
+				]]>
+			</if>
+		</if>
+		ORDER BY A.MDF_DTM DESC
+	</select>
+
+</mapper>

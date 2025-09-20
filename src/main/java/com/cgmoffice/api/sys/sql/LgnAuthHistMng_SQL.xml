@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.LgnAuthHistMng'>
+
+	<select id="getListPage_TB_LGN_LST"
+		parameterType="com.cgmoffice.api.sys.dto.SearchLgnAuthHistDto"
+		resultType="com.cgmoffice.api.sys.dto.LgnAuthHistDto"
+	>
+	/*api.sys.LgnAuthHistMng.getListPage_TB_LGN_LST*/
+		SELECT
+			A.LGN_SEQ lgnSeq /* 접속일련번호 */
+			,A.MEM_ID memId /* 멤버아이디*/
+			,B.MEM_NM memNm /* 성명 */
+			,A.ACS_DT acsDt /* 접속일 */
+			,A.ACS_IP acsIp /* 접속ip */
+			,A.LGN_SCS_YN lgnScsYn /* 로그인성공여부 */
+			,(SELECT C.CD_NM FROM TB_DTL_CD C WHERE C.GRP_CD = 'LOGIN_CFCD' AND C.CD = A.LOGIN_CFCD) loginCfcd /* 로그인구분코드 */
+			,A.CRT_DTM crtDtm /* 생성일시 */
+		FROM TB_LGN_LST A
+			LEFT JOIN TB_MEM B ON A.MEM_ID = B.MEM_ID
+		WHERE 1=1
+		<if test='memId != null and memId != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	               AND A.MEM_Id LIKE '%' || #{memId} || '%'
+	               <if test='memId != null and memId.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND A.MEM_Id LIKE CONCAT('%', #{memId}, '%')
+	                <if test='memId != null and memId.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND A.MEM_Id LIKE '%' + #{memId} + '%'
+	                <if test='memId != null and memId.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <otherwise>
+	               AND A.MEM_Id LIKE '%' || #{memId} || '%'
+	               <if test='memId != null and memId.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </otherwise>
+	        </choose>
+		</if>
+		<if test='memNm != null and memNm != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	               AND B.MEM_NM LIKE '%' || #{memNm} || '%'
+	               <if test='memNm != null and memNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND B.MEM_NM LIKE CONCAT('%', #{memNm}, '%')
+	                <if test='memNm != null and memNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND B.MEM_NM LIKE '%' + #{memNm} + '%'
+	                <if test='memNm != null and memNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <otherwise>
+	               AND B.MEM_NM LIKE '%' || #{memNm} || '%'
+	               <if test='memNm != null and memNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </otherwise>
+	        </choose>
+
+		</if>
+		<if test='acsDt != null and acsDt != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+              		AND A.ACS_DT LIKE '%' || #{acsDt} || '%'
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND A.ACS_DT LIKE CONCAT('%', #{acsDt}, '%')
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND A.ACS_DT LIKE '%' + #{acsDt} + '%'
+	            </when>
+	            <otherwise>
+	              	AND A.ACS_DT LIKE '%' || #{acsDt} || '%'
+	            </otherwise>
+	        </choose>
+
+		</if>
+	</select>
+
+
+
+</mapper>

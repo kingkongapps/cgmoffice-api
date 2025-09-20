@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.cnt.prdclustmng'>
+
+	<select id="getInfo_TB_CLUS_ITM_SET_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+		resultType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* api.cnt.prdclustmng.getInfo_TB_CLUS_ITM_SET_MST */
+		SELECT
+			A.CLUS_ITM_CD
+			,A.CLUS_ITM_NM
+			,A.CLUS_ITM_CLCD
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm
+				,TO_CHAR(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s')  crtDtm
+				,DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s')  mdfDtm
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(A.CRT_DTM, 'yyyy-MM-dd HH:mm:ss')  crtDtm
+				,FORMAT(A.MDF_DTM, 'yyyy-MM-dd HH:mm:ss')  mdfDtm
+			</if>
+			,A.CRTR
+			,A.UPDUSR
+			,A.PRDT_CD
+			,A.SCREN_DISP_ORD
+			,A.FILE_NO
+			,C.FILE_NM
+			,A.SN
+			,B.CMPNY_CODE
+			,B.PAGE_FLD
+			,B.RQU_SEL_YN
+			,B.INSKND_CD
+		FROM
+			TB_CLUS_ITM_SET_MST A
+			LEFT OUTER JOIN TB_CM_FILE C ON A.FILE_NO = C.FILE_NO
+			,TB_PRDT_INFO_MST B
+		WHERE 1=1
+			AND A.CLUS_ITM_CD = B.PRDT_CD
+			AND A.PRDT_CD = #{prdtCd}
+			AND B.DEL_YN = 'N'
+			AND A.DEL_YN = 'N'
+		ORDER BY A.SCREN_DISP_ORD
+	</select>
+
+	<update id="setDelFlagPrdtCd_TB_CLUS_ITM_SET_MST"
+		parameterType="string"
+	>
+	/* api.cnt.prdclustmng.setDelFlagPrdtCd_TB_CLUS_ITM_SET_MST */
+		UPDATE TB_CLUS_ITM_SET_MST SET
+			DEL_YN = 'Y'
+			,DATA_TRANS_STTCD = 'S'  /* S:전송대기, Y:전송성공, N:전송실패, F:시스템오류 */
+		WHERE 1=1
+			AND PRDT_CD = #{prdtCd}
+	</update>
+
+	<update id="setDelFlagClusItmCd_TB_CLUS_ITM_SET_MST"
+		parameterType="string"
+	>
+	/* api.cnt.prdclustmng.setDelFlagClusItmCd_TB_CLUS_ITM_SET_MST */
+		UPDATE TB_CLUS_ITM_SET_MST SET
+			DEL_YN = 'Y'
+			,DATA_TRANS_STTCD = 'S'  /* S:전송대기, Y:전송성공, N:전송실패, F:시스템오류 */
+		WHERE 1=1
+			AND PRDT_CD = #{clusItmCd}
+	</update>
+
+	<insert id="insert_TB_CLUS_ITM_SET_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* api.cnt.prdclustmng.insert_TB_CLUS_ITM_SET_MST */
+		INSERT INTO TB_CLUS_ITM_SET_MST (
+			CLUS_ITM_CD
+			,CLUS_ITM_NM
+			,CLUS_ITM_CLCD
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,UPDUSR
+			,PRDT_CD
+			,SCREN_DISP_ORD
+			,FILE_NO
+			,SN
+			,DEL_YN
+			,DATA_TRANS_STTCD  /* S:전송대기, Y:전송성공, N:전송실패, F:시스템오류 */
+		) VALUES (
+			#{clusItmCd}
+			,#{clusItmNm}
+			,#{clusItmClcd}
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{updusr}
+			,#{prdtCd}
+			,#{screnDispOrd}
+			,#{fileNo}
+			,#{sn}
+			,COALESCE(#{delYn}, 'N')
+			,COALESCE(#{dataTransSttcd}, 'S')
+		)
+	</insert>
+
+	<delete id="resetPrdtList_TB_CLUS_ITM_SET_MST"
+		parameterType="string"
+	>
+	/* api.cnt.prdclustmng.resetPrdtList_TB_CLUS_ITM_SET_MST */
+		DELETE FROM TB_CLUS_ITM_SET_MST
+		WHERE 1=1
+			AND PRDT_CD = #{prdtCd}
+	</delete>
+
+</mapper>

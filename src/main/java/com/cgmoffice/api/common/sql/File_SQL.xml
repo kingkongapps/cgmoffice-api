@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='common.file'>
+
+	<insert id="insertFileInfo"
+		parameterType="com.cgmoffice.api.common.dto.FileInfoDto"
+		>
+	/* common.file.insertFileInfo */
+		INSERT INTO TB_CM_FILE (
+			FILE_GRP_NO /* 파일그룹ID */
+			,FILE_NO    /* 파일ID */
+			,FILE_NM    /* 파일명 */
+			,FILE_GB    /* 타입코드 */
+			,REF_NO     /* 참조번호 */
+			,SORT_NO    /* 정렬순서 */
+			,FILE_SIZE  /* 파일용량 */
+			,FILE_EXT   /* 파일확장자 */
+			,FILE_TYPE  /* 파일타입 */
+			,FILE_PATH  /* 저장파일물리경로 */
+			,RM         /* 비고 */
+			,DEL_YN     /* 삭제여부 */
+			,CRT_DTM    /* 생성일시 */
+			,MDF_DTM    /* 수정일시 */
+			,CRTR       /* 생성자 */
+			,AMDR       /* 수정자 */
+		) VALUES (
+			#{fileGrpNo}
+			,#{fileNo}
+			,#{fileNm}
+			,#{fileGb}
+			,#{refNo}
+			,#{sortNo}
+			,#{fileSize}
+			,#{fileExt}
+			,#{fileType}
+			,#{filePath}
+			,#{rm}
+			,'N'
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{amdr}
+		)
+	</insert>
+
+	<select id="getFileInfo"
+		parameterType="string"
+		resultType="com.cgmoffice.api.common.dto.FileInfoDto"
+	>
+	/* common.file.getFileInfo */
+		SELECT
+			A.FILE_GRP_NO     /* 파일그룹ID */
+			,A.FILE_NO     /* 파일ID */
+			,A.FILE_NM    /* 파일명 */
+			,A.FILE_GB    /* 타입코드 */
+			,A.REF_NO     /* 참조번호 */
+			,A.SORT_NO    /* 정렬순서 */
+			,A.FILE_SIZE  /* 파일용량 */
+			,A.FILE_EXT   /* 파일확장자 */
+			,A.FILE_TYPE  /* 파일타입 */
+			,A.FILE_PATH  /* 저장파일물리경로 */
+			,A.RM         /* 비고 */
+			,A.DEL_YN     /* 삭제여부 */
+			,A.CRT_DTM    /* 생성일시 */
+			,A.MDF_DTM    /* 수정일시 */
+			,A.CRTR       /* 생성자 */
+			,A.AMDR       /* 수정자 */
+		FROM
+			TB_CM_FILE A
+		WHERE 1=1
+			AND A.FILE_NO = #{fileNo}
+	</select>
+
+	<update id="setFileDelete"
+		parameterType="com.cgmoffice.api.common.dto.FileInfoDto"
+	>
+	/* common.file.setFileDelete */
+		UPDATE TB_CM_FILE SET
+			DEL_YN = 'Y'
+			,AMDR = #{amdr}
+			,MDF_DTM = CURRENT_TIMESTAMP
+		WHERE 1=1
+			AND FILE_NO = #{fileNo}
+	</update>
+
+	<delete id="delete"
+		parameterType="com.cgmoffice.api.common.dto.FileInfoDto"
+	>
+	/* common.file.delete */
+		DELETE FROM TB_CM_FILE
+		WHERE 1=1
+			AND FILE_NO = #{fileNo}
+	</delete>
+
+	<update id="updateFileInfo"
+		parameterType="com.cgmoffice.api.common.dto.FileInfoDto"
+	>
+	/* common.file.updateFileInfo */
+		UPDATE TB_CM_FILE SET
+			FILE_GRP_NO = #{fileGrpNo}
+			,FILE_NO = #{fileNo}
+			,FILE_NM = #{fileNm}
+			,FILE_GB = #{fileGb}
+			,REF_NO = #{refNo}
+			,SORT_NO = #{sortNo}
+			,FILE_SIZE = #{fileSize}
+			,FILE_EXT = #{fileExt}
+			,FILE_TYPE = #{fileType}
+			,FILE_PATH = #{filePath}
+			,RM = #{rm}
+			,DEL_YN = #{delYn}
+			,MDF_DTM = CURRENT_TIMESTAMP
+			,AMDR = #{amdr}
+		WHERE 1=1
+			AND FILE_NO = #{fileNo}
+	</update>
+
+	<select id="getFileInfoListByFileNo"
+		parameterType="string"
+		resultType="com.cgmoffice.api.common.dto.FileInfoDto"
+	>
+	/* common.file.getFileInfoListByFileNo */
+		SELECT
+			A.FILE_GRP_NO     /* 파일그룹ID */
+			,A.FILE_NO     /* 파일ID */
+			,A.FILE_NM    /* 파일명 */
+			,A.FILE_GB    /* 타입코드 */
+			,A.REF_NO     /* 참조번호 */
+			,A.SORT_NO    /* 정렬순서 */
+			,A.FILE_SIZE  /* 파일용량 */
+			,A.FILE_EXT   /* 파일확장자 */
+			,A.FILE_TYPE  /* 파일타입 */
+			,A.FILE_PATH  /* 저장파일물리경로 */
+			,A.RM         /* 비고 */
+			,A.DEL_YN     /* 삭제여부 */
+			,A.CRT_DTM    /* 생성일시 */
+			,A.MDF_DTM    /* 수정일시 */
+			,A.CRTR       /* 생성자 */
+			,A.AMDR       /* 수정자 */
+		FROM
+			TB_CM_FILE A
+		WHERE 1=1
+			AND LOWER(A.FILE_NO) = LOWER(#{fileNo})
+			AND A.DEL_YN = 'N'
+		ORDER BY A.CRT_DTM DESC
+	</select>
+
+	<select id="getFileInfoListByFileNm"
+		parameterType="string"
+		resultType="com.cgmoffice.api.common.dto.FileInfoDto"
+	>
+	/* common.file.getFileInfoListByFileNm */
+		SELECT
+			A.FILE_GRP_NO     /* 파일그룹ID */
+			,A.FILE_NO     /* 파일ID */
+			,A.FILE_NM    /* 파일명 */
+			,A.FILE_GB    /* 타입코드 */
+			,A.REF_NO     /* 참조번호 */
+			,A.SORT_NO    /* 정렬순서 */
+			,A.FILE_SIZE  /* 파일용량 */
+			,A.FILE_EXT   /* 파일확장자 */
+			,A.FILE_TYPE  /* 파일타입 */
+			,A.FILE_PATH  /* 저장파일물리경로 */
+			,A.RM         /* 비고 */
+			,A.DEL_YN     /* 삭제여부 */
+			,A.CRT_DTM    /* 생성일시 */
+			,A.MDF_DTM    /* 수정일시 */
+			,A.CRTR       /* 생성자 */
+			,A.AMDR       /* 수정자 */
+		FROM
+			TB_CM_FILE A
+		WHERE 1=1
+			AND LOWER(A.FILE_NM) = LOWER(#{fileNm})
+			AND A.DEL_YN = 'N'
+		ORDER BY A.CRT_DTM DESC
+	</select>
+
+</mapper>

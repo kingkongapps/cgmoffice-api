@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='common.code'>
+
+	<select id="getCmmnCd"
+		parameterType="cmmnMap"
+		resultType="com.cgmoffice.api.common.dto.CmmnCdDto"
+	>
+	/* common.code.getCmmnCd */
+		SELECT
+			A.GRP_CD
+			,A.GRP_CD_NM
+			,B.CD
+			,B.CD_NM
+			,B.CD_DESC
+			,B.SORT_NO
+			,B.CD_VAL1
+			,B.CD_VAL2
+			,B.CD_VAL3
+			,B.LEV_SEQ
+			,B.DEL_YN
+			,COALESCE(B.USE_YN, 'Y') USE_YN
+		<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+			,TO_CHAR(B.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') CRT_DTM
+			,TO_CHAR(B.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') MDF_DTM
+		</if>
+		<if test='databaseId == "mysql"'>
+			,DATE_FORMAT(B.CRT_DTM, '%Y-%m-%d %H:%i:%s') AS CRT_DTM
+			,DATE_FORMAT(B.MDF_DTM, '%Y-%m-%d %H:%i:%s') AS MDF_DTM
+		</if>
+		<if test='databaseId == "sqlserver"'>
+			,FORMAT(B.CRT_DTM, 'yyyy-MM-dd HH:mm:ss') AS CRT_DTM
+			,FORMAT(B.MDF_DTM, 'yyyy-MM-dd HH:mm:ss') AS MDF_DTM
+		</if>
+		FROM
+			TB_GRP_CD A
+			,TB_DTL_CD B
+		WHERE 1=1
+			AND A.GRP_CD = B.GRP_CD
+			AND A.DEL_YN = 'N'
+		<if test='grpCd != null and grpCd != ""'>
+			AND A.GRP_CD = #{grpCd}
+		</if>
+	</select>
+
+	<delete
+		id="deleteDtlCmmnCd"
+		parameterType="com.cgmoffice.api.common.dto.CmmnCdDto"
+	>
+	/* common.code.deleteDtlCmmnCd */
+		DELETE FROM TB_DTL_CD
+		WHERE 1=1
+			AND CD = #{cd}
+			AND GRP_CD = #{grpCd}
+	</delete>
+
+	<insert
+		id="insertDtlCmmnCd"
+		parameterType="com.cgmoffice.api.common.dto.CmmnCdDto"
+	>
+	/* common.code.insertDtlCmmnCd */
+		INSERT INTO TB_DTL_CD (
+			GRP_CD
+			,CD
+			,CD_NM
+			,CD_DESC
+			,SORT_NO
+			,CD_VAL1
+			,CD_VAL2
+			,CD_VAL3
+			,DEL_YN
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,AMDR
+			,LEV_SEQ
+			,USE_YN
+		) VALUES (
+			#{grpCd}
+			,#{cd}
+			,#{cdNm}
+			,#{cdDesc}
+			,#{sortNo}
+			,#{cdVal1}
+			,#{cdVal2}
+			,#{cdVal3}
+			,'N'
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{amdr}
+			,#{levSeq}
+			,#{useYn}
+		)
+	</insert>
+
+	<select id="chkCmmnCd"
+		parameterType="com.cgmoffice.api.common.dto.CmmnCdDto"
+		resultType="int"
+	>
+	/* common.code.chkCmmnCd */
+		SELECT
+			COUNT(*)
+		FROM
+			TB_DTL_CD A
+		WHERE 1=1
+			AND A.GRP_CD = #{grpCd}
+			AND A.CD = #{cd}
+	</select>
+
+</mapper>

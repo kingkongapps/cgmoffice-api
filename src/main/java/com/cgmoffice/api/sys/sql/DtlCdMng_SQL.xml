@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.DtlCdMng'>
+
+	<!-- 상세코드 목록조회 -->
+	<select id="getListPage_TB_DTL_CD"
+		parameterType="com.cgmoffice.api.sys.dto.SearchDtlCdDto"
+		resultType="com.cgmoffice.api.sys.dto.DtlCdDto"
+	>
+	/*api.sys.DtlCdMng.getListPage_TB_DTL_CD*/
+		SELECT
+			A.GRP_CD grpCd /* 그룹코드 */
+			,B.GRP_CD_NM grpCdNm /* 그룹코드명 */
+			,A.CD cd /* 상세코드 */
+			,A.CD_NM cdNm /* 상세코드명 */
+			,A.CD_DESC cdDesc /* 코드상세 */
+			,A.SORT_NO sortNo /* 정렬순서 */
+			,A.LEV_SEQ levSeq /* 레벨번호 */
+			,A.CD_VAL1 cdVal1 /* 기타1 */
+			,A.CD_VAL2 cdVal2 /* 기타2 */
+			,A.CD_VAL3 cdVal3 /* 기타3 */
+			,A.DEL_YN delYn /* 삭제여부 */
+			,A.CRT_DTM crtDtm /* 생성일시 */
+			,A.USE_YN useYn /* 사용여부 */
+		FROM TB_DTL_CD A
+			LEFT JOIN TB_GRP_CD B
+			ON A.GRP_CD = B.GRP_CD
+		WHERE 1=1
+			AND A.GRP_CD != 'CMPNY_CODE' -- 회사코드 제외
+		<if test='grpCdNm != null and grpCdNm != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	                AND B.GRP_CD_NM LIKE '%' || #{grpCdNm} || '%'
+	                <if test='grpCdNm != null and grpCdNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND B.GRP_CD_NM LIKE CONCAT('%', #{grpCdNm}, '%')
+	                <if test='grpCdNm != null and grpCdNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND B.GRP_CD_NM LIKE '%' + #{grpCdNm} + '%'
+	                <if test='grpCdNm != null and grpCdNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <otherwise>
+	                AND B.GRP_CD_NM LIKE '%'|| #{grpCdNm} || '%'
+	                <if test='grpCdNm != null and grpCdNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </otherwise>
+	        </choose>
+		</if>
+		<if test='cd != null and cd != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	                AND (A.CD LIKE '%'|| UPPER(#{cd}) || '%'
+						OR  A.CD LIKE '%'|| LOWER(#{cd}) || '%'
+
+						<if test='cd != null and cd.contains("\\")'>
+							ESCAPE '\'
+						</if>
+					)
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND (A.CD LIKE  CONCAT('%', UPPER(#{cd}), '%')
+						OR  A.CD LIKE  CONCAT('%', LOWER(#{cd}) ,'%')
+
+						<if test='cd != null and cd.contains("\\\\")'>
+							ESCAPE '\\'
+						</if>
+					)
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND (A.CD LIKE '%'+ UPPER(#{cd}) + '%'
+						OR  A.CD LIKE '%'+ LOWER(#{cd}) + '%'
+
+						<if test='cd != null and cd.contains("\\")'>
+							ESCAPE '\'
+						</if>
+					)
+	            </when>
+	            <otherwise>
+	                AND (A.CD LIKE '%'|| UPPER(#{cd}) || '%'
+						OR  A.CD LIKE '%'|| LOWER(#{cd}) || '%'
+
+						<if test='cd != null and cd.contains("\\")'>
+							ESCAPE '\'
+						</if>
+					)
+	            </otherwise>
+	        </choose>
+
+		</if>
+		ORDER BY A.GRP_CD , A.SORT_NO
+	</select>
+
+	<!-- 상세코드 삭제 -->
+	<delete id="delete_TB_DTL_CD"
+		parameterType="com.cgmoffice.api.sys.dto.DtlCdDto"
+	>
+	/*api.sys.DtlCdMng.delete_TB_DTL_CD*/
+		DELETE FROM TB_DTL_CD
+		WHERE CD = #{cd}
+			AND GRP_CD = #{grpCd}
+	</delete>
+
+
+	<!-- 상세코드 신규등록 -->
+	<insert id="insert_TB_DTL_CD"
+		parameterType="com.cgmoffice.api.sys.dto.DtlCdDto"
+	>
+	/*api.sys.DtlCdMng.insert_TB_DTL_CD*/
+		INSERT INTO TB_DTL_CD
+		(
+			GRP_CD, /* 그룹코드 */
+			CD, /* 상세코드 */
+			CD_NM, /* 상세코드명 */
+			CD_DESC, /* 코드상세 */
+			SORT_NO,  /* 정렬순서 */
+			CD_VAL1,  /* 기타1 */
+			CD_VAL2,  /* 기타2 */
+			CD_VAL3,  /* 기타3 */
+			DEL_YN, /* 삭제여부 */
+			CRT_DTM,
+			MDF_DTM,
+			CRTR,
+			AMDR,
+			LEV_SEQ, /* 레벨번호 */
+			USE_YN  /* 사용여부 */
+		)VALUES(
+			#{grpCd},
+			#{cd},
+			#{cdNm},
+			#{cdDesc},
+			#{sortNo},
+			#{cdVal1},
+			#{cdVal2},
+			#{cdVal3},
+			'N',
+			CURRENT_TIMESTAMP,
+			CURRENT_TIMESTAMP,
+			#{user},
+			#{user},
+			#{levSeq},
+			#{useYn}
+		)
+	</insert>
+
+	<!-- 상세코드 수정 -->
+	<update id="update_TB_DTL_CD"
+		parameterType="com.cgmoffice.api.sys.dto.DtlCdDto"
+	>
+	/*api.sys.DtlCdMng.update_TB_DTL_CD*/
+		UPDATE TB_DTL_CD
+		SET
+			CD_NM = #{cdNm},
+			CD_DESC = #{cdDesc},
+			SORT_NO = #{sortNo},
+			CD_VAL1 = #{cdVal1},
+			CD_VAL2 = #{cdVal2},
+			CD_VAL3 = #{cdVal3},
+			USE_YN = #{useYn},
+			MDF_DTM = CURRENT_TIMESTAMP,
+			AMDR = #{user},
+			LEV_SEQ = #{levSeq}
+		WHERE CD = #{cd}
+			AND GRP_CD = #{grpCd}
+	</update>
+
+
+	<!-- 상세코드 코드중복 확인 -->
+	<select id="selectCdYn_TB_DTL_CD"
+		parameterType="com.cgmoffice.api.sys.dto.DtlCdDto"
+		resultType="String"
+	>
+	/*api.sys.DtlCdMng.selectCdYn_TB_DTL_CD*/
+		<choose>
+		  <!-- Oracle -->
+		  <when test="databaseId == 'oracle'">
+		  <![CDATA[
+		  /* oracle */
+			SELECT CASE
+			  	WHEN EXISTS (
+			    	SELECT 1
+				    FROM TB_DTL_CD A
+				    WHERE A.GRP_CD = #{grpCd}
+				    	AND A.CD = #{cd}
+			   	) THEN 'true'
+			   	ELSE 'false'
+			END AS result
+			FROM dual
+			]]>
+			</when>
+
+		  <!-- DB2 -->
+		  <when test="databaseId == 'db2'">
+		  <![CDATA[
+		  /* db2 */
+			SELECT CASE
+			  	WHEN EXISTS (
+			    	SELECT 1
+				    FROM TB_DTL_CD A
+				    WHERE A.GRP_CD = #{grpCd}
+				    	AND A.CD = #{cd}
+			   	) THEN 'true'
+			   	ELSE 'false'
+			END AS result
+			FROM SYSIBM.SYSDUMMY1
+			]]>
+		  </when>
+
+		  <!-- PostgreSQL, MySQL, SQL Server -->
+		  <otherwise>
+		  <![CDATA[
+		  /* PostgreSQL, MySQL, SQL Server */
+			SELECT CASE
+			  	WHEN EXISTS (
+			    	SELECT 1
+				    FROM TB_DTL_CD A
+				    WHERE A.GRP_CD = #{grpCd}
+				    	AND A.CD = #{cd}
+			   	) THEN 'true'
+			   	ELSE 'false'
+			END AS result
+			]]>
+		   </otherwise>
+		</choose>
+	</select>
+
+</mapper>

@@ -1,0 +1,112 @@
+<configuration>
+
+    <!-- 공통 로그 패턴 -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} %-5level [%X{glTxId}] %logger{36} - %msg%n" />
+
+    <!-- 콘솔에 출력할 로그 패턴 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+<!--	    <filter class="ch.qos.logback.core.filter.EvaluatorFilter">-->
+<!--	        <evaluator class="ch.qos.logback.classic.boolex.JaninoEventEvaluator">-->
+<!--	            <expression>-->
+<!--	                return message.contains("TB_INDV_CLUS_MERGE_INF") ||-->
+<!--	                       message.contains("insertInfo_TB_INDV_CLUS_MERGE_INF");-->
+<!--	            </expression>-->
+<!--	        </evaluator>-->
+<!--	        <OnMismatch>ACCEPT</OnMismatch>-->
+<!--	        <OnMatch>DENY</OnMatch>-->
+<!--	    </filter>-->
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 파일로 저장할 로그 설정 -->
+<!--     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender"> -->
+<!--         로그 파일 경로 및 이름 -->
+<!--         <file>${ROOT_FOLDER}/application.log</file> -->
+<!--         로그 롤링 정책 -->
+<!--         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"> -->
+<!--             일별로 파일 생성 -->
+<!--             <fileNamePattern>${ROOT_FOLDER}/application-%d{yyyy-MM-dd}.log</fileNamePattern> -->
+<!--             보관할 최대 파일 수 -->
+<!--             <maxHistory>30</maxHistory> -->
+<!--         </rollingPolicy> -->
+<!--         <encoder> -->
+<!--             <pattern>${LOG_PATTERN}</pattern> -->
+<!--         </encoder> -->
+<!--     </appender> -->
+
+    <!-- 에러 로그 파일 설정 -->
+<!--     <appender name="ERROR_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender"> -->
+<!--         <file>${ROOT_FOLDER}/error.log</file> -->
+<!--         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"> -->
+<!--             <fileNamePattern>${ROOT_FOLDER}/error-%d{yyyy-MM-dd}.log</fileNamePattern> -->
+<!--             <maxHistory>30</maxHistory> -->
+<!--         </rollingPolicy> -->
+<!--         <filter class="ch.qos.logback.classic.filter.ThresholdFilter"> -->
+<!--             <level>ERROR</level> -->
+<!--         </filter> -->
+<!--         <encoder> -->
+<!--             <pattern>${LOG_PATTERN}</pattern> -->
+<!--         </encoder> -->
+<!--     </appender> -->
+
+    <!-- 패키지별/클래스별 로그 레벨 설정 -->
+    <logger name="com.cgmoffice." level="DEBUG" additivity="false">
+<!--     	<springProfile name="local"> -->
+        	<appender-ref ref="CONSOLE" />
+<!--         </springProfile> -->
+<!--         <appender-ref ref="FILE" /> -->
+<!--         <appender-ref ref="ERROR_LOG_FILE" /> -->
+    </logger>
+
+    <logger name="jdbc.sqlonly" level="OFF" additivity="true">
+    </logger>
+    <logger name="jdbc.audit" level="OFF" additivity="false">
+    </logger>
+    <logger name="jdbc.sqltiming" level="DEBUG" additivity="false">
+<!--     	<springProfile name="local"> -->
+        	<appender-ref ref="CONSOLE" />
+<!--         </springProfile> -->
+<!--         <appender-ref ref="FILE" /> -->
+<!--         <appender-ref ref="ERROR_LOG_FILE" /> -->
+    </logger>
+    <logger name="jdbc.connection" level="OFF" additivity="false">
+    </logger>
+    <logger name="api.cnt.prdtcluspdfmng.insertInfo_TB_INDV_CLUS_MERGE_INF" level="OFF" additivity="false">
+    </logger>
+    <logger name="org" level="ERROR" additivity="false">
+    	<appender-ref ref="CONSOLE" />
+    </logger>
+    <logger name="io" level="ERROR" additivity="false">
+    	<appender-ref ref="CONSOLE" />
+    </logger>
+    <logger name="jdbc.resultsettable" level="INFO" additivity="false">
+<!--     	<springProfile name="local"> -->
+        	<appender-ref ref="CONSOLE" />
+<!--         </springProfile> -->
+<!--         <appender-ref ref="FILE" /> -->
+<!--         <appender-ref ref="ERROR_LOG_FILE" /> -->
+    </logger>
+    <logger name="jdbc.resultset" level="OFF" additivity="false">
+    </logger>
+
+
+<!--    	<springProfile name="local"> -->
+<!-- 	    <root level="debug"> -->
+<!--        		<appender-ref ref="CONSOLE" /> -->
+<!-- 	    </root> -->
+<!--     </springProfile> -->
+<!--    	<springProfile name="macbook"> -->
+	    <root level="debug">
+       		<appender-ref ref="CONSOLE" />
+	    </root>
+<!--     </springProfile> -->
+<!--    	<springProfile notName="local,macbook"> -->
+<!-- 	    <root level="info"> -->
+<!-- 	        <appender-ref ref="FILE" /> -->
+<!-- 	        <appender-ref ref="ERROR_LOG_FILE" /> -->
+<!--         </root> -->
+<!--    	</springProfile> -->
+    <!-- Logger 정의 -->
+</configuration>

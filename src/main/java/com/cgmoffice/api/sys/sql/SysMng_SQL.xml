@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.SysMng'>
+
+	<!-- 메뉴 목록 조회 -->
+	<select id="getList_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.SearchSysMngDto"
+		resultType="com.cgmoffice.api.sys.dto.MenuDto"
+	>
+	/* api.sys.SysMng.getList_TB_MENU */
+		SELECT
+			  A.MENU_CD			menuCd			/* 메뉴코드 */
+			, A.MENU_NM			menuNm			/* 메뉴명 */
+			, A.UPPR_MENU_CD	upprMenuCd		/* 상위메뉴코드 */
+			, A.MENU_TYP_CD		menuTypCd		/* 메뉴유형코드 */
+			, A.MENU_CFCD		menuCfcd		/* 메뉴구분코드 */
+			, A.MENU_LEV		menuLev			/* 메뉴레벨 */
+			, A.MENU_DTEXT		menuDtext		/* 메뉴상세내용 */
+			, A.SORT_NO			sortNo			/* 정렬순서 */
+			, A.MENU_DISP_YN	menuDispYn		/* 메뉴표시여부 */
+			, A.PGID			pgid			/* 프로그램ID */
+			, A.PG_URL_ADR		pgUrlAdr		/* 프로그램URL주소 */
+			, B.MENU_NM			upprMenuNm		/* 상위메뉴명 */
+			, B.MENU_LEV		upprMenuLev		/* 상위메뉴레벨 */
+		FROM
+			 TB_MENU A JOIN TB_MENU B ON B.MENU_CD = A.UPPR_MENU_CD
+		WHERE 1=1
+			<if test='upprMenuCd != null and upprMenuCd != ""'>
+				AND A.UPPR_MENU_CD = #{upprMenuCd}
+			</if>
+			<if test='menuCd != null and menuCd != ""'>
+				AND A.MENU_CD = #{menuCd}
+			</if>
+			AND A.DEL_YN = 'N'
+			AND B.DEL_YN = 'N'
+			AND A.MENU_DISP_YN = 'Y'
+			AND B.MENU_DISP_YN = 'Y'
+	 UNION
+		SELECT
+			  A.MENU_CD			menuCd			/* 메뉴코드 */
+			, A.MENU_NM			menuNm			/* 메뉴명 */
+			, A.UPPR_MENU_CD	upprMenuCd		/* 상위메뉴코드 */
+			, A.MENU_TYP_CD		menuTypCd		/* 메뉴유형코드 */
+			, A.MENU_CFCD		menuCfcd		/* 메뉴구분코드 */
+			, A.MENU_LEV		menuLev			/* 메뉴레벨 */
+			, A.MENU_DTEXT		menuDtext		/* 메뉴상세내용 */
+			, A.SORT_NO			sortNo			/* 정렬순서 */
+			, A.MENU_DISP_YN	menuDispYn		/* 메뉴표시여부 */
+			, A.PGID			pgid			/* 프로그램ID */
+			, A.PG_URL_ADR		pgUrlAdr		/* 프로그램URL주소 */
+			, B.MENU_NM			upprMenuNm		/* 상위메뉴명 */
+			, B.MENU_LEV		upprMenuLev		/* 상위메뉴레벨 */
+		FROM
+			 TB_MENU A JOIN TB_MENU B ON A.MENU_CD = B.MENU_CD AND ( A.UPPR_MENU_CD = 'ROOT' OR A.UPPR_MENU_CD IS NULL)
+		WHERE 1=1
+			<if test='upprMenuCd != null and upprMenuCd != ""'>
+				AND A.UPPR_MENU_CD = #{upprMenuCd}
+			</if>
+			<if test='menuCd != null and menuCd != ""'>
+				AND A.MENU_CD = #{menuCd}
+			</if>
+			AND A.DEL_YN = 'N'
+			AND B.DEL_YN = 'N'
+			AND A.MENU_DISP_YN = 'Y'
+			AND B.MENU_DISP_YN = 'Y'	 
+	 
+	</select>
+
+	<!-- 권한그룹 목록 조회 -->
+	<select id="getList_TB_DTL_CD"
+		parameterType="com.cgmoffice.api.sys.dto.SearchSysMngDto"
+		resultType="com.cgmoffice.api.sys.dto.AuthGrpDto"
+	>
+	/* api.sys.SysMng.getList_TB_DTL_CD */
+		SELECT
+			  GRP_CD	grpCd	/* 그룹코드 */
+			, CD		cd		/* 상세코드 */
+			, CD_NM		cdNm	/* 상세코드명 */
+			, CD_DESC	cdDesc	/* 코드상세 */
+			, SORT_NO	sortNo	/* 정렬순서 */
+			, CD_VAL1	cdVal1	/* 기타1 */
+			, CD_VAL2	cdVal2	/* 기타2 */
+			, CD_VAL3	cdVal3	/* 기타3 */
+			, LEV_SEQ	levSeq	/* 레벨번호 */
+			, USE_YN	useYn	/* 사용여부 */
+		FROM
+			TB_DTL_CD
+		WHERE 1=1
+			AND GRP_CD = 'AUTH_CD'
+			AND DEL_YN = 'N'
+	</select>
+
+	<!-- 권한 목록 조회 -->
+	<select id="getList_TB_AUTH"
+		parameterType="com.cgmoffice.api.sys.dto.SearchSysMngDto"
+		resultType="com.cgmoffice.api.sys.dto.AuthDto"
+	>
+	/* api.sys.SysMng.getList_TB_AUTH */
+		SELECT
+			  A.AUTH_CD			authCd		/* 권한코드 */
+			, A.MENU_CD			menuCd		/* 메뉴코드 */
+			, CASE
+				WHEN (
+					'Y' = A.SELECT_YN AND
+					'Y' = A.INSERT_YN AND
+					'Y' = A.UPDATE_YN AND
+					'Y' = A.DELETE_YN AND
+					'Y' = A.EXCEL_YN
+					  )
+				THEN 'Y'
+				ELSE 'N'
+			  END 				allYn		/* 전체권한여부 */
+			, A.SELECT_YN		selectYn	/* 조회권한여부 */
+			, A.INSERT_YN		insertYn	/* 등록권한여부 */
+			, A.UPDATE_YN		updateYn	/* 수정권한여부 */
+			, A.DELETE_YN 		deleteYn	/* 삭제권한여부 */
+			, A.EXCEL_YN		excelYn		/* 엑셀조회권한여부 */
+			, A.AUTH_NM			authNm		/* 권한명 */
+			, A.SUP_AUTH_YN		supAuthYn	/* 슈퍼권한여부 */
+			, A.AUTH_GRP_CD		authGrpCd	/* 권한그룹코드 */
+			, B.MENU_NM			menuNm		/* 메뉴명 */
+			, B.UPPR_MENU_CD	upprMenuCd	/* 상위메뉴코드 */
+			, (SELECT MENU_NM FROM TB_MENU WHERE MENU_CD = B.UPPR_MENU_CD) 					upprMenuNm	/* 상위메뉴명 */
+			, (SELECT CD_NM FROM TB_DTL_CD WHERE GRP_CD = 'AUTH_CD' AND CD = A.AUTH_GRP_CD) authGrpNm	/* 권한그룹명 */
+		FROM
+			 TB_AUTH A LEFT OUTER JOIN TB_MENU B ON B.MENU_CD = A.MENU_CD
+		WHERE 1=1
+			<if test='authGrpCd != null and authGrpCd != ""'>
+				AND A.AUTH_GRP_CD = #{authGrpCd}
+			</if>
+			<if test='authCd != null and authCd != ""'>
+				AND A.AUTH_CD = #{authCd}
+			</if>
+			AND A.DEL_YN = 'N'
+			AND B.DEL_YN = 'N'
+			AND B.MENU_DISP_YN = 'Y'
+	</select>
+
+	<!-- 권한 삭제 -->
+	<update id="delete_TB_AUTH"
+		parameterType="com.cgmoffice.api.sys.dto.AuthDto"
+	>
+	/* api.sys.SysMng.delete_TB_AUTH */
+		DELETE FROM TB_AUTH
+		WHERE 1=1
+			AND AUTH_GRP_CD = UPPER(#{authGrpCd})
+			AND AUTH_CD 	= UPPER(#{authCd})
+	</update>
+
+	<!-- 권한 등록 -->
+	<insert id="insert_TB_AUTH"
+		parameterType="com.cgmoffice.api.sys.dto.AuthDto"
+	>
+	/* api.sys.SysMng.insert_TB_AUTH */
+		INSERT INTO TB_AUTH(
+				AUTH_GRP_CD,
+				AUTH_CD,
+				AUTH_NM,
+				MENU_CD,
+				SELECT_YN,
+				INSERT_YN,
+				UPDATE_YN,
+				DELETE_YN,
+				EXCEL_YN,
+				CRT_DTM,
+				MDF_DTM,
+				CRTR,
+				AMDR,
+				DEL_YN
+		) VALUES(
+				#{authGrpCd},
+				#{authCd},
+				#{authNm},
+				#{menuCd},
+				COALESCE(#{selectYn}, 'N'),
+				COALESCE(#{insertYn}, 'N'),
+				COALESCE(#{updateYn}, 'N'),
+				COALESCE(#{deleteYn}, 'N'),
+				COALESCE(#{excelYn}, 'N'),
+				CURRENT_TIMESTAMP,
+				CURRENT_TIMESTAMP,
+				#{user},
+				#{user},
+				'N'
+		)
+	</insert>
+
+	<!-- 권한코드 중복 카운트 조회 -->
+	<select id="getCount_TB_AUTH"
+		parameterType="com.cgmoffice.api.sys.dto.SearchSysMngDto"
+		resultType="Integer"
+	>
+	/* api.sys.SysMng.getCount_TB_AUTH */
+
+		SELECT
+			  COUNT(*)
+		FROM
+			TB_AUTH
+		WHERE 1=1
+			/* ▼▼▼ 현재 권한 테이블에 PK는 AUTH_CD, MENU_CD... ▼▼▼ AND AUTH_GRP_CD = ? > WHERE 조건에서 주석... */
+			AND AUTH_CD     = #{authCd}
+	</select>
+
+	<!-- 권한코드 중복 카운트 조회 -->
+	<select id="getNewAuthCd"
+		parameterType="com.cgmoffice.api.sys.dto.AuthDto"
+		resultType="com.cgmoffice.api.sys.dto.AuthDto"
+	>
+	/* api.sys.SysMng.getNewAuthCd */
+
+		SELECT
+			NVL(TO_NUMBER(MAX(AUTH_CD)) + 1, TO_NUMBER(#{authGrpCd}) + 1) authCd
+		FROM TB_AUTH
+		WHERE AUTH_GRP_CD = #{authGrpCd}
+	</select>
+</mapper>
+
+

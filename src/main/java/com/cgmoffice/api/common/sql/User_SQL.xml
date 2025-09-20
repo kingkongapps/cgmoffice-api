@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.common.user'>
+
+	<select id="getUserInfo"
+		parameterType="string"
+		resultType="com.cgmoffice.api.common.dto.UserDto"
+		>
+	/* api.common.user.getUserInfo */
+		SELECT
+			A.MEM_ID
+			,A.MEM_NM
+			,A.PASSWD
+			,A.USE_YN
+			,A.AUTH_CD
+			,A.COM_CODE
+		FROM TB_MEM A
+		WHERE 1=1
+			AND A.MEM_ID = #{memId}
+	</select>
+
+	<select id="getAuthGrpCd"
+		parameterType="string"
+		resultType="string"
+	>
+	/* api.common.user.getAuthGrpCd */
+		SELECT
+			A.AUTH_GRP_CD
+		FROM
+			TB_AUTH A
+		WHERE 1=1
+			AND A.AUTH_CD = #{authCd}
+	</select>
+
+	<select id="getComName"
+		parameterType="string"
+		resultType="string"
+	>
+	/* api.common.user.getComName */
+		SELECT
+			A.CD_NM
+		FROM
+			TB_DTL_CD A
+		WHERE 1=1
+			AND A.GRP_CD = 'CMPNY_CODE'
+			AND A.CD = #{comCode}
+	</select>
+
+	<insert id="insertUserInfo"
+		parameterType="com.cgmoffice.api.common.dto.UserDto"
+		>
+	/* api.common.user.insertUserInfo */
+		INSERT INTO TB_MEM (
+			MEM_ID
+			,PASSWD
+			,MEM_NM
+			,USE_YN
+			,EMAIL
+			,LOGIN_CNT
+			,AUTH_CD
+			,DEL_YN
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,AMDR
+		) VALUES (
+			#{memId}
+			,#{passwd}
+			,#{memNm}
+			,'Y'
+			,#{email}
+			,0
+			,#{authCd}
+			,'N'
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{amdr}
+		)
+	</insert>
+
+	<update id="updateUserInfo"
+		parameterType="com.cgmoffice.api.common.dto.UserDto"
+		>
+			/* api.common.user.updateUserInfo */
+			UPDATE TB_MEM
+			<choose>
+				<when test='lgnScsYn == "Y"'>
+					SET LOGIN_CNT = 0,
+						LAST_LGN_DT = CURRENT_TIMESTAMP
+				</when>
+				<otherwise>
+					SET LOGIN_CNT = (SELECT T.* FROM(SELECT MAX(LOGIN_CNT) + 1 as cnt
+									 FROM TB_MEM
+									 WHERE MEM_ID = #{memId}) T),
+						LAST_LGN_DT = CURRENT_TIMESTAMP
+				</otherwise>
+			</choose>
+			WHERE MEM_ID = #{memId}
+	</update>
+
+</mapper>

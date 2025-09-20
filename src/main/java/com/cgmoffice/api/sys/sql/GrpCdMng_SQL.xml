@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.GrpCdMng'>
+
+	<!-- 그룹코드 목록조회 -->
+	<select id="getList_TB_GRP_CD"
+		parameterType="com.cgmoffice.api.sys.dto.SearchGrpCdDto"
+		resultType="com.cgmoffice.api.sys.dto.GrpCdDto"
+	>
+	/* api.sys.GrpCdMng.getList_TB_GRP_CD */
+		SELECT
+			A.GRP_CD grpCd /* 그룹코드 */
+			,A.RGST_YMD rgstYmd /* 등록일자 */
+			,A.GRP_CD_NM grpCdNm /* 그룹코드명 */
+			,A.GRP_DESC grpDesc /* 그룹코드상세 */
+			,A.DEL_YN delYn /* 삭제여부 */
+			,A.USE_YN useYn /* 사용여부 */
+		FROM TB_GRP_CD A
+		WHERE 1=1
+		<if test='grpCd != null and grpCd != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	                AND A.GRP_CD LIKE '%' || UPPER(#{grpCd}) || '%'
+	                <if test='grpCd != null and grpCd.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND A.GRP_CD LIKE CONCAT('%', UPPER(#{grpCd}), '%')
+	                <if test='grpCd != null and grpCd.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND A.GRP_CD LIKE '%' + UPPER(#{grpCd}) + '%'
+	                <if test='grpCd != null and grpCd.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <otherwise>
+	               AND A.GRP_CD  LIKE '%' || UPPER(#{grpCd}) || '%'
+	               <if test='grpCd != null and grpCd.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </otherwise>
+	        </choose>
+		</if>
+		<if test='grpCdNm != null and grpCdNm != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	                AND A.GRP_CD_NM LIKE '%' || #{grpCdNm} || '%'
+	                <if test='grpCdNm != null and grpCdNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND A.GRP_CD_NM LIKE CONCAT('%', #{grpCdNm}, '%')
+	                <if test='grpCdNm != null and grpCdNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND A.GRP_CD_NM LIKE '%' + #{grpCdNm} + '%'
+	                <if test='grpCdNm != null and grpCdNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <otherwise>
+	               AND A.GRP_CD_NM LIKE '%' || #{grpCdNm} || '%'
+	               <if test='grpCdNm != null and grpCdNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </otherwise>
+	        </choose>
+		</if>
+			AND A.DEL_YN = 'N'
+		ORDER BY A.GRP_CD
+	</select>
+
+
+	<!-- 그룹코드 신규등록 -->
+	<insert id="insert_TB_GRP_CD"
+		parameterType="com.cgmoffice.api.sys.dto.GrpCdDto"
+	>
+	/* api.sys.GrpCdMng.insert_TB_GRP_CD */
+		INSERT INTO TB_GRP_CD(
+				GRP_CD, /* 그룹코드 */
+				RGST_YMD, /* 등록일자 */
+				GRP_CD_NM, /* 그룹코드명 */
+				GRP_DESC, /* 그룹코드상세 */
+				USE_YN, /* 사용여부 */
+				DEL_YN, /* 삭제여부 */
+				CRT_DTM, /* 생성일시 */
+				MDF_DTM, /* 수정일시 */
+				CRTR, /* 생성자 */
+				AMDR /* 수정자 */
+		) VALUES(
+				UPPER(#{grpCd}),
+				<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+					TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD'),
+				</if>
+				<if test='databaseId == "mysql"'>
+					DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d'),
+				</if>
+				<if test='databaseId == "sqlserver"'>
+					FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd'),
+				</if>
+				#{grpCdNm},
+				#{grpDesc},
+				#{useYn},
+				'N',
+				CURRENT_TIMESTAMP,
+				CURRENT_TIMESTAMP,
+				#{user},
+				#{user}
+		)
+	</insert>
+
+
+	<!-- 그룹코드 수정저장 -->
+	<update id="update_TB_GRP_CD"
+		parameterType="com.cgmoffice.api.sys.dto.GrpCdDto"
+	>
+	/* api.sys.GrpCdMng.update_TB_GRP_CD */
+		UPDATE TB_GRP_CD
+		SET
+			MDF_DTM = CURRENT_TIMESTAMP,
+			GRP_DESC = #{grpDesc},
+			GRP_CD_NM = #{grpCdNm},
+			USE_YN = #{useYn}
+		WHERE GRP_CD = UPPER(#{grpCd})
+	</update>
+
+
+	<!-- 그룹코드 삭제 -->
+	<update id="delete_TB_GRP_CD"
+		parameterType="com.cgmoffice.api.sys.dto.GrpCdDto"
+	>
+	/* api.sys.GrpCdMng.delete_TB_GRP_CD */
+		UPDATE TB_GRP_CD
+		SET DEL_YN = 'Y'
+		WHERE GRP_CD = UPPER(#{grpCd})
+	</update>
+
+
+	<!-- 그룹코드 중복확인 -->
+	<select id="selectGrpCd_TB_GRP_CD"
+		parameterType="com.cgmoffice.api.sys.dto.GrpCdDto"
+		resultType="String"
+	>
+	/* api.sys.GrpCdMng.selectGrpCd_TB_GRP_CD */
+		<choose>
+		  <!-- Oracle -->
+		  <when test="databaseId == 'oracle'">
+		  <![CDATA[
+		  /* oracle */
+			SELECT CASE
+			  	WHEN EXISTS (
+			    	SELECT 1
+				    FROM TB_GRP_CD
+				    WHERE GRP_CD = UPPER(#{grpCd})
+			   	) THEN 'true'
+			   	ELSE 'false'
+			END AS result
+			FROM dual
+			]]>
+			</when>
+
+		  <!-- DB2 -->
+		  <when test="databaseId == 'db2'">
+		  <![CDATA[
+		  /* db2 */
+			SELECT CASE
+			  	WHEN EXISTS (
+			    	SELECT 1
+				    FROM TB_GRP_CD
+				    WHERE GRP_CD = UPPER(#{grpCd})
+			   	) THEN 'true'
+			   	ELSE 'false'
+			END AS result
+			FROM SYSIBM.SYSDUMMY1
+			]]>
+			</when>
+
+		  <!-- PostgreSQL, MySQL, SQL Server -->
+		  <otherwise>
+		  <![CDATA[
+		  /* PostgreSQL, MySQL, SQL Server */
+			SELECT CASE
+			  	WHEN EXISTS (
+			    	SELECT 1
+				    FROM TB_GRP_CD
+				    WHERE GRP_CD = UPPER(#{grpCd})
+			   	) THEN 'true'
+			   	ELSE 'false'
+			END AS result
+			]]>
+			</otherwise>
+		</choose>
+	</select>
+
+</mapper>
+
+

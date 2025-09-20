@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.dashboardmng'>
+
+	<select id="getClusRcvTotalCnt_TB_INDV_CLUS_RCV_MST"
+		parameterType="cmmnMap"
+		resultType="int"
+	>
+	/* api.sys.dashboardmng.getClusRcvTotalCnt_TB_INDV_CLUS_RCV_MST */
+		SELECT
+			COUNT(*)
+		FROM
+			TB_INDV_CLUS_RCV_MST
+		WHERE 1=1
+			<if test='comCode != "CMMN"'>
+				AND CMPNY_CD = #{comCode}
+			</if>
+	</select>
+
+	<select id="getClusRcvHistMonth_TB_INDV_CLUS_RCV_MST"
+		parameterType="cmmnMap"
+		resultType="cmmnMap"
+	>
+		/* api.sys.dashboardmng.getClusRcvHistMonth_TB_INDV_CLUS_RCV_MST */
+		<if test='databaseId == "postgresql"'>
+			<![CDATA[
+				SELECT *
+				FROM(SELECT 'first' AS "gubun", TO_CHAR(NOW(), 'YYYY') || '년 ' || (CASE WHEN TO_CHAR(NOW(), 'MM') <= '06' THEN '상반기' ELSE '하반기' END) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON REGEXP_SUBSTR(B.MXTR_CLUS_CD, '[^-]+', 1) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND B.CRT_DTM >= TO_DATE(TO_CHAR(NOW(), 'YYYY') || (CASE WHEN TO_CHAR(NOW(), 'MM') <= '06' THEN '0101' ELSE '0701' END), 'YYYYMMDD') AND B.CRT_DTM <= TO_DATE(TO_CHAR(NOW(), 'YYYY') || (CASE WHEN TO_CHAR(NOW(), 'MM') <= '06' THEN '0630' ELSE '1231' END), 'YYYYMMDD')
+					) T ON (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+
+				UNION ALL
+
+				SELECT *
+				FROM(SELECT 'second' AS "gubun", TO_CHAR(NOW() - INTERVAL '1 year', 'YYYY') || '년 ' || (CASE WHEN TO_CHAR(NOW() - INTERVAL '1 year', 'MM') <= '06' THEN '상반기' ELSE '하반기' END) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON REGEXP_SUBSTR(B.MXTR_CLUS_CD, '[^-]+', 1) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND B.CRT_DTM >= TO_DATE(TO_CHAR(NOW() - INTERVAL '1 year', 'YYYY') || (CASE WHEN TO_CHAR(NOW() - INTERVAL '1 year', 'MM') <= '06' THEN '0101' ELSE '0701' END), 'YYYYMMDD') AND B.CRT_DTM <= TO_DATE(TO_CHAR(NOW() - INTERVAL '1 year', 'YYYY') || (CASE WHEN TO_CHAR(NOW() - INTERVAL '1 year', 'MM') <= '06' THEN '0630' ELSE '1231' END), 'YYYYMMDD')
+					) T on (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+			]]>
+		</if>
+		<if test='databaseId == "db2"'>
+			<![CDATA[
+				SELECT *
+				FROM(SELECT 'first' AS "gubun", TO_CHAR(NOW(), 'YYYY') || '년 ' || (CASE WHEN TO_CHAR(NOW(), 'MM') <= '06' THEN '상반기' ELSE '하반기' END) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON REGEXP_SUBSTR(B.MXTR_CLUS_CD, '[^-]+', 1) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND B.CRT_DTM >= TO_DATE(TO_CHAR(NOW(), 'YYYY') || (CASE WHEN TO_CHAR(NOW(), 'MM') <= '06' THEN '0101' ELSE '0701' END), 'YYYYMMDD') AND B.CRT_DTM <= TO_DATE(TO_CHAR(NOW(), 'YYYY') || (CASE WHEN TO_CHAR(NOW(), 'MM') <= '06' THEN '0630' ELSE '1231' END), 'YYYYMMDD')
+					) T ON (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+
+				UNION ALL
+
+				SELECT *
+				FROM(SELECT 'second' AS "gubun", TO_CHAR(NOW() - 1 YEAR, 'YYYY') || '년 ' || (CASE WHEN TO_CHAR(NOW() - 1 YEAR, 'MM') <= '06' THEN '상반기' ELSE '하반기' END) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON REGEXP_SUBSTR(B.MXTR_CLUS_CD, '[^-]+', 1) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND B.CRT_DTM >= TO_DATE(TO_CHAR(NOW() - 1 YEAR, 'YYYY') || (CASE WHEN TO_CHAR(NOW() - 1 YEAR, 'MM') <= '06' THEN '0101' ELSE '0701' END), 'YYYYMMDD') AND B.CRT_DTM <= TO_DATE(TO_CHAR(NOW() - 1 YEAR, 'YYYY') || (CASE WHEN TO_CHAR(NOW() - 1 YEAR, 'MM') <= '06' THEN '0630' ELSE '1231' END), 'YYYYMMDD')
+					) T on (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+			]]>
+		</if>
+		<if test='databaseId == "oracle"'>
+			<![CDATA[
+				SELECT *
+				FROM(SELECT 'first' AS "gubun", TO_CHAR(SYSDATE, 'YYYY') || '년 ' || (CASE WHEN TO_CHAR(SYSDATE, 'MM') <= '06' THEN '상반기' ELSE '하반기' END) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON REGEXP_SUBSTR(B.MXTR_CLUS_CD, '[^-]+', 1) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND B.CRT_DTM >= TO_DATE(TO_CHAR(SYSDATE, 'YYYY') || (CASE WHEN TO_CHAR(SYSDATE, 'MM') <= '06' THEN '0101' ELSE '0701' END), 'YYYYMMDD') AND B.CRT_DTM <= TO_DATE(TO_CHAR(SYSDATE, 'YYYY') || (CASE WHEN TO_CHAR(SYSDATE, 'MM') <= '06' THEN '0630' ELSE '1231' END), 'YYYYMMDD')
+					) T ON (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+
+				UNION ALL
+
+				SELECT *
+				FROM(SELECT 'second' AS "gubun", TO_CHAR(ADD_MONTHS(SYSDATE, -12), 'YYYY') || '년 ' || (CASE WHEN TO_CHAR(ADD_MONTHS(SYSDATE, -12), 'MM') <= '06' THEN '상반기' ELSE '하반기' END) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON REGEXP_SUBSTR(B.MXTR_CLUS_CD, '[^-]+', 1) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND B.CRT_DTM >= TO_DATE(TO_CHAR(ADD_MONTHS(SYSDATE, -12), 'YYYY') || (CASE WHEN TO_CHAR(ADD_MONTHS(SYSDATE, -12), 'MM') <= '06' THEN '0101' ELSE '0701' END), 'YYYYMMDD') AND B.CRT_DTM <= TO_DATE(TO_CHAR(ADD_MONTHS(SYSDATE, -12), 'YYYY') || (CASE WHEN TO_CHAR(ADD_MONTHS(SYSDATE, -12), 'MM') <= '06' THEN '0630' ELSE '1231' END), 'YYYYMMDD')
+					) T ON (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+			]]>
+		</if>
+		<if test='databaseId == "mysql"'>
+			<![CDATA[
+				SELECT *
+				FROM(SELECT 'first' AS "gubun", CONCAT(DATE_FORMAT(NOW(), '%Y'), '년 ', (CASE WHEN DATE_FORMAT(NOW(), '%m') <= '06' THEN '상반기' ELSE '하반기' END)) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON REGEXP_SUBSTR(B.MXTR_CLUS_CD, '[^-]+', 1) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND DATE_FORMAT(B.CRT_DTM, '%Y%m%d') >= DATE_FORMAT(CONCAT(DATE_FORMAT(NOW(), '%Y'), (CASE WHEN DATE_FORMAT(NOW(), '%m') <= '06' THEN '0101' ELSE '0701' END)), '%Y%m%d') AND DATE_FORMAT(B.CRT_DTM, '%Y%m%d') <= DATE_FORMAT(CONCAT(DATE_FORMAT(NOW(), '%Y'), (CASE WHEN DATE_FORMAT(NOW(), '%m') <= '06' THEN '0630' ELSE '1231' END)), '%Y%m%d')
+					) T ON (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+
+				UNION ALL
+
+				SELECT *
+				FROM(SELECT 'second' AS "gubun", CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1 YEAR), '%Y'), '년 ', (CASE WHEN DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1 YEAR), '%m') <= '06' THEN '상반기' ELSE '하반기' END)) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON REGEXP_SUBSTR(B.MXTR_CLUS_CD, '[^-]+', 1) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND DATE_FORMAT(B.CRT_DTM, '%Y%m%d') >= DATE_FORMAT(CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1 YEAR), '%Y'), (CASE WHEN DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1 YEAR), '%m') <= '06' THEN '0101' ELSE '0701' END)), '%Y%m%d') AND DATE_FORMAT(B.CRT_DTM, '%Y%m%d') <= DATE_FORMAT(CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1 YEAR), '%Y'), (CASE WHEN DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1 YEAR), '%m') <= '06' THEN '0630' ELSE '1231' END)), '%Y%m%d')
+					) T ON (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+			]]>
+		</if>
+		<if test='databaseId == "sqlserver"'>
+			<![CDATA[
+				SELECT *
+				FROM(SELECT TOP 100 PERCENT 'first' AS "gubun", CONCAT(FORMAT(GETDATE(), 'yyyy'), '년 ', (CASE WHEN FORMAT(GETDATE(), 'MM') <= '06' THEN '상반기' ELSE '하반기' END)) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON SUBSTRING(B.MXTR_CLUS_CD, 0, CHARINDEX('-', B.MXTR_CLUS_CD)) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND B.CRT_DTM >= CAST(CONCAT(FORMAT(GETDATE(), 'yyyy'), (CASE WHEN FORMAT(GETDATE(), 'MM') <= '06' THEN '0101' ELSE '0701' END)) AS DATE) AND B.CRT_DTM <= CAST(CONCAT(FORMAT(GETDATE(), 'yyyy'), (CASE WHEN FORMAT(GETDATE(), 'MM') <= '06' THEN '0630' ELSE '1231' END)) AS DATE)
+					) T ON (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+
+				UNION ALL
+
+				SELECT *
+				FROM(SELECT TOP 100 PERCENT 'second' AS "gubun", CONCAT(FORMAT(DATEADD(YEAR, -1, GETDATE()), 'yyyy'), '년 ', (CASE WHEN FORMAT(DATEADD(YEAR, -1, GETDATE()), 'MM') <= '06' THEN '상반기' ELSE '하반기' END)) AS "quarter", AA.CD AS "cd", AA.CD_NM AS "cdNm", count(T.prdtCfcd) AS "cnt"
+				FROM TB_DTL_CD AA LEFT JOIN (
+					SELECT
+						A.PRDT_CFCD prdtCfcd
+					FROM
+						TB_PRDT_INFO_MST A INNER JOIN TB_INDV_CLUS_RCV_MST B ON SUBSTRING(B.MXTR_CLUS_CD, 0, CHARINDEX('-', B.MXTR_CLUS_CD)) = A.PRDT_CD
+						RIGHT JOIN TB_DTL_CD C ON (A.PRDT_CFCD = C.CD AND C.GRP_CD = 'PRDT_CFCD')
+					WHERE 1=1
+			]]>
+						<if test='comCode != "CMMN"'>
+							AND A.CMPNY_CODE = #{comCode}
+						</if>
+			<![CDATA[
+						AND B.CRT_DTM >= CAST(CONCAT(FORMAT(DATEADD(YEAR, -1, GETDATE()), 'yyyy'), (CASE WHEN FORMAT(DATEADD(YEAR, -1, GETDATE()), 'MM') <= '06' THEN '0101' ELSE '0701' END)) AS DATE) AND B.CRT_DTM <= CAST(CONCAT(FORMAT(DATEADD(YEAR, -1, GETDATE()), 'yyyy'), (CASE WHEN FORMAT(DATEADD(YEAR, -1, GETDATE()), 'MM') <= '06' THEN '0630' ELSE '1231' END)) AS DATE)
+					) T ON (AA.CD = T.prdtCfcd AND T.prdtCfcd IS NOT NULL)
+				WHERE AA.GRP_CD = 'PRDT_CFCD'
+				GROUP BY AA.CD, AA.CD_NM
+				ORDER BY AA.CD) TT
+			]]>
+		</if>
+	</select>
+
+	<select id="getPrdtTotalCnt_TB_PRDT_INFO_MST"
+		parameterType="cmmnMap"
+		resultType="int"
+	>
+	/* api.sys.dashboardmng.getPrdtTotalCnt_TB_PRDT_INFO_MST */
+		SELECT
+			COUNT(*)
+		FROM
+			TB_PRDT_INFO_MST
+		WHERE 1=1
+			AND DEL_YN = 'N'
+			AND CLUS_ITM_CLCD IN ('C','T')
+			<if test='comCode != "CMMN"'>
+				AND CMPNY_CODE = #{comCode}
+			</if>
+	</select>
+
+	<select id="getPrdtCurrMonthCnt_TB_PRDT_INFO_MST"
+		parameterType="cmmnMap"
+		resultType="int"
+	>
+	/* api.sys.dashboardmng.getPrdtCurrMonthCnt_TB_PRDT_INFO_MST */
+		SELECT
+			COUNT(*)
+		FROM
+			TB_PRDT_INFO_MST
+		WHERE 1=1
+			AND DEL_YN = 'N'
+			AND CLUS_ITM_CLCD IN ('C','T')
+		<if test='comCode != "CMMN"'>
+			AND CMPNY_CODE = #{comCode}
+		</if>
+		<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+			AND TO_CHAR(CRT_DTM, 'YYYYMM') = TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMM')
+		</if>
+		<if test='databaseId == "mysql"'>
+			AND DATE_FORMAT(CRT_DTM, '%Y%m') = DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m')
+		</if>
+		<if test='databaseId == "sqlserver"'>
+			AND FORMAT(CRT_DTM, 'yyyyMM') = FORMAT(CURRENT_TIMESTAMP, 'yyyyMM')
+		</if>
+	</select>
+
+	<select id="getGrid01_TB_PRDT_INFO_MST"
+		parameterType="cmmnMap"
+		resultType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+	>
+	/* api.sys.dashboardmng.getGrid01_TB_PRDT_INFO_MST */
+		SELECT
+		<if test='databaseId == "sqlserver"'>
+			TOP 7
+		</if>
+			A.*
+		FROM (
+				SELECT
+					A.CMPNY_CODE
+					,D.CD_NM	  cmpnyNm
+					,A.PRDT_CD
+					,A.SPRDT_NM
+					,A.NPRDT_NM
+					,A.PRDT_CFCD
+					,A.PM_STOP_YMD
+					,A.RGST_YMD
+					,A.MDF_YMD
+					<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+						,TO_CHAR(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm
+						,TO_CHAR(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm
+					</if>
+					<if test='databaseId == "mysql"'>
+						,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s') AS crtDtm
+						,DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s') AS mdfDtm
+					</if>
+					<if test='databaseId == "sqlserver"'>
+						,FORMAT(A.CRT_DTM, 'yyyy-MM-dd HH:mm:ss') AS crtDtm
+						,FORMAT(A.MDF_DTM, 'yyyy-MM-dd HH:mm:ss') AS mdfDtm
+					</if>
+					,A.CRTR
+					,A.UPDUSR
+					,A.PM_BEGIN_YMD
+					,A.PRDT_TEXT
+					,A.INSKND_CD
+					,A.MNSPCC_CFCD
+					,A.CLUS_ITM_CLCD
+					,A.PRDT_CHG_YMD
+					,B.FILE_NO
+					,C.FILE_NM
+					,A.PAGE_FLD
+					,A.RQU_SEL_YN
+					<if test='databaseId == "postgresql" or databaseId == "db2"'>
+						,ROW_NUMBER() OVER() ROWNUM
+					</if>
+				FROM
+					TB_PRDT_INFO_MST A
+					,TB_PRDT_INFO_CHG_LST B
+					LEFT OUTER JOIN TB_CM_FILE C ON B.FILE_NO = C.FILE_NO
+					,TB_DTL_CD D
+				WHERE 1=1
+					<if test='comCode != "CMMN"'>
+						AND A.CMPNY_CODE = #{comCode}
+					</if>
+					AND A.DEL_YN = 'N'
+					AND A.CMPNY_CODE = D.CD
+					AND D.GRP_CD = 'CMPNY_CODE' /* 공통코드 보험사 */
+					AND A.PRDT_CHG_YMD = B.PRDT_CHG_YMD
+					AND A.PRDT_CD = B.PRDT_CD
+					AND C.FILE_NM IS NULL
+				<if test='databaseId != "sqlserver"'>
+					ORDER BY A.CRT_DTM DESC
+				</if>
+		) A
+		<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+		<![CDATA[
+			WHERE ROWNUM <= 7
+		]]>
+		</if>
+		<if test='databaseId == "mysql"'>
+			LIMIT 7
+		</if>
+	</select>
+
+	<select id="getGrid02_TB_PRDT_INFO_MST"
+		parameterType="cmmnMap"
+		resultType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+	>
+	/* api.sys.dashboardmng.getGrid02_TB_PRDT_INFO_MST */
+		SELECT
+		<if test='databaseId == "sqlserver"'>
+			TOP 7
+		</if>
+			A.*
+		FROM (
+				SELECT
+					A.CMPNY_CODE
+					,D.CD_NM	  cmpnyNm
+					,A.PRDT_CD
+					,A.SPRDT_NM
+					,A.NPRDT_NM
+					,A.PRDT_CFCD
+					,A.PM_STOP_YMD
+					,A.RGST_YMD
+					,A.MDF_YMD
+					<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+						,TO_CHAR(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm
+						,TO_CHAR(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm
+					</if>
+					<if test='databaseId == "mysql"'>
+						,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s') AS crtDtm
+						,DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s') AS mdfDtm
+					</if>
+					<if test='databaseId == "sqlserver"'>
+						,FORMAT(A.CRT_DTM, 'yyyy-MM-dd HH:mm:ss') AS crtDtm
+						,FORMAT(A.MDF_DTM, 'yyyy-MM-dd HH:mm:ss') AS mdfDtm
+					</if>
+					,A.CRTR
+					,A.UPDUSR
+					,A.PM_BEGIN_YMD
+					,A.PRDT_TEXT
+					,A.INSKND_CD
+					,A.MNSPCC_CFCD
+					,A.CLUS_ITM_CLCD
+					,A.PRDT_CHG_YMD
+					,B.FILE_NO
+					,C.FILE_NM
+					,A.PAGE_FLD
+					,A.RQU_SEL_YN
+					<if test='databaseId == "postgresql" or databaseId == "db2"'>
+						,ROW_NUMBER() OVER() ROWNUM
+					</if>
+				FROM
+					TB_PRDT_INFO_MST A
+					,TB_PRDT_INFO_CHG_LST B
+					LEFT OUTER JOIN TB_CM_FILE C ON B.FILE_NO = C.FILE_NO
+					,TB_DTL_CD D
+				WHERE 1=1
+					<if test='comCode != "CMMN"'>
+						AND A.CMPNY_CODE = #{comCode}
+					</if>
+					AND A.DEL_YN = 'N'
+					AND A.CMPNY_CODE = D.CD
+					AND D.GRP_CD = 'CMPNY_CODE' /* 공통코드 보험사 */
+					AND A.PRDT_CHG_YMD = B.PRDT_CHG_YMD
+					AND A.PRDT_CD = B.PRDT_CD
+					AND C.FILE_NM IS NOT NULL
+					AND NOT EXISTS (
+						SELECT 1
+						FROM TB_CLUS_ITM_SET_MST X
+						WHERE X.CLUS_ITM_CD = A.PRDT_CD AND X.DEL_YN = 'N'
+					)
+				<if test='databaseId != "sqlserver"'>
+					ORDER BY A.CRT_DTM DESC
+				</if>
+		) A
+		<if test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+		<![CDATA[
+			WHERE ROWNUM <= 7
+		]]>
+		</if>
+		<if test='databaseId == "mysql"'>
+			LIMIT 7
+		</if>
+	</select>
+
+</mapper>

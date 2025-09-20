@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.condPrdtmng'>
+
+	<select id="getList_TB_PRDT_INFO_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.SearchPrdDto"
+		resultType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+		>
+	/* api.sys.condPrdtmng.getList_TB_PRDT_INFO_MST */
+		SELECT
+			A.CMPNY_CODE    cmpnyCode
+			,D.CD_NM        cmpnyNm
+			,A.PRDT_CD                     prdtCd
+			,COALESCE(A.SPRDT_NM, ' ')     sprdtNm
+			,COALESCE(A.NPRDT_NM, ' ')     nprdtNm
+			,COALESCE(A.PRDT_CFCD, ' ')    prdtCfcd
+			,COALESCE(A.PM_STOP_YMD, ' ')  pmStopYmd
+			,COALESCE(A.RGST_YMD, ' ')     rgstYmd
+			,COALESCE(A.MDF_YMD, ' ')      mdfYmd
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm
+				,TO_CHAR(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s')  crtDtm
+				,DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s')  mdfDtm
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(A.CRT_DTM, 'yyyy-MM-dd HH:mm:ss')  crtDtm
+				,FORMAT(A.MDF_DTM, 'yyyy-MM-dd HH:mm:ss')  mdfDtm
+			</if>
+			,COALESCE(A.PM_BEGIN_YMD, ' ') pmBeginYmd
+			,COALESCE(A.PRDT_TEXT, ' ')    prdtText
+			,COALESCE(A.INSKND_CD, ' ')    inskndCd
+			,COALESCE(A.MNSPCC_CFCD, ' ' )  mnspccCfcd
+			,COALESCE(A.CLUS_ITM_CLCD, ' ' )  clusItmClcd
+			,COALESCE(A.PRDT_CHG_YMD, ' ') prdtChgYmd
+			,COALESCE(B.FILE_NO, ' ') fileNo
+			,COALESCE(C.FILE_NM, ' ') fileNm
+			,A.CRTR         crtr
+			,A.UPDUSR       updusr
+			,A.PAGE_FLD     pageFld
+			,A.RQU_SEL_YN   rquSelYn
+		FROM
+			TB_PRDT_INFO_MST A
+			,TB_PRDT_INFO_CHG_LST B
+			LEFT OUTER JOIN TB_CM_FILE C ON B.FILE_NO = C.FILE_NO
+			,TB_DTL_CD D
+		WHERE 1=1
+			AND A.DEL_YN = 'N'
+			AND A.CMPNY_CODE = D.CD
+			AND D.GRP_CD = 'CMPNY_CODE' /* 공통코드 보험사 */
+			AND A.PRDT_CD = B.PRDT_CD
+			AND A.PRDT_CHG_YMD = B.PRDT_CHG_YMD
+		<if test='cmpnyCode != null and cmpnyCode != ""'>
+			AND A.CMPNY_CODE = #{cmpnyCode}
+		</if>
+		<if test='prdtNm != null and prdtNm != ""'>
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				AND ( ( A.SPRDT_NM LIKE '%' || #{prdtNm} || '%'
+
+					<if test='prdtNm != null and prdtNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+
+				) OR ( A.NPRDT_NM LIKE '%' || #{prdtNm} || '%'
+
+					<if test='prdtNm != null and prdtNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+
+				)  OR ( A.PRDT_CD LIKE '%' || #{prdtNm} || '%'
+
+					<if test='prdtNm != null and prdtNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+
+				) )
+			</if>
+			<if test='dbDriverId == "mysql" or dbDriverId == "sqlserver"'>
+				AND ( ( A.SPRDT_NM LIKE CONCAT('%', #{prdtNm}, '%')
+
+					<if test='prdtNm != null and prdtNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+
+				) OR ( A.NPRDT_NM LIKE CONCAT('%', #{prdtNm}, '%')
+
+					<if test='prdtNm != null and prdtNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+
+				) OR ( A.PRDT_CD LIKE CONCAT('%', #{prdtNm}, '%')
+
+					<if test='prdtNm != null and prdtNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+
+				) )
+			</if>
+		</if>
+		<if test='prdtChgYmd != null and prdtChgYmd != ""'>
+			AND A.PRDT_CHG_YMD = #{prdtChgYmd}
+		</if>
+		<if test='prdtCfcd != null and prdtCfcd != ""'>
+			AND A.PRDT_CFCD = #{prdtCfcd}
+		</if>
+		<if test='mnspccCfcd != null and mnspccCfcd != ""'>
+			AND A.MNSPCC_CFCD = #{mnspccCfcd}
+		</if>
+		<if test='clusItmClcd != null and clusItmClcd != ""'>
+			AND A.CLUS_ITM_CLCD = #{clusItmClcd}
+		</if>
+		<if test='rquSelYn != null and rquSelYn != ""'>
+			AND A.RQU_SEL_YN = #{rquSelYn}
+		</if>
+	</select>
+
+	<select id="getExcelList_TB_PRDT_INFO_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.SearchPrdDto"
+		resultType="com.cgmoffice.api.cnt.dto.PrdInfoExcelDto"
+		>
+	/* api.sys.condPrdtmng.getExcelList_TB_PRDT_INFO_MST */
+		SELECT
+			A.CMPNY_CODE    cmpnyCode
+			,COALESCE(A.MNSPCC_CFCD, ' ' )  mnspccCfcd
+			,COALESCE(A.CLUS_ITM_CLCD, ' ' )  clusItmClcd
+			,A.PRDT_CD                     prdtCd
+			,COALESCE(A.SPRDT_NM, ' ')     sprdtNm
+			,COALESCE(A.NPRDT_NM, ' ')     nprdtNm
+			,COALESCE(A.PRDT_CFCD, ' ')    prdtCfcd
+			,COALESCE(A.PM_BEGIN_YMD, ' ') pmBeginYmd
+			,COALESCE(A.PM_STOP_YMD, ' ')  pmStopYmd
+			,COALESCE(A.INSKND_CD, ' ')    inskndCd
+			,A.RQU_SEL_YN   rquSelYn
+			,A.PAGE_FLD     pageFld
+			,COALESCE(A.PRDT_TEXT, ' ')    prdtText
+			,COALESCE(A.RGST_YMD, ' ')     rgstYmd
+			,COALESCE(A.MDF_YMD, ' ')      mdfYmd
+			,COALESCE(A.PRDT_CHG_YMD, ' ') prdtChgYmd
+			,COALESCE(A.DEL_YN, ' ') delYn
+			<!-- <if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm
+				,TO_CHAR(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s')  crtDtm
+				,DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s')  mdfDtm
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(A.CRT_DTM, 'yyyy-MM-dd HH:mm:ss')  crtDtm
+				,FORMAT(A.MDF_DTM, 'yyyy-MM-dd HH:mm:ss')  mdfDtm
+			</if>-->
+		FROM
+			TB_PRDT_INFO_MST A
+			,TB_PRDT_INFO_CHG_LST B
+			LEFT OUTER JOIN TB_CM_FILE C ON B.FILE_NO = C.FILE_NO
+			,TB_DTL_CD D
+		WHERE 1=1
+			AND A.DEL_YN = 'N'
+			AND A.CMPNY_CODE = D.CD
+			AND D.GRP_CD = 'CMPNY_CODE' /* 공통코드 보험사 */
+			AND A.PRDT_CD = B.PRDT_CD
+			AND A.PRDT_CHG_YMD = B.PRDT_CHG_YMD
+		<if test='cmpnyCode != null and cmpnyCode != ""'>
+			AND A.CMPNY_CODE = #{cmpnyCode}
+		</if>
+		<if test='prdtNm != null and prdtNm != ""'>
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				AND ( ( A.SPRDT_NM LIKE '%' || #{prdtNm} || '%'
+
+					<if test='prdtNm != null and prdtNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+
+				) OR ( A.NPRDT_NM LIKE '%' || #{prdtNm} || '%'
+
+					<if test='prdtNm != null and prdtNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+
+				)  OR ( A.PRDT_CD LIKE '%' || #{prdtNm} || '%'
+
+					<if test='prdtNm != null and prdtNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+
+				) )
+			</if>
+			<if test='dbDriverId == "mysql" or dbDriverId == "sqlserver"'>
+				AND ( ( A.SPRDT_NM LIKE CONCAT('%', #{prdtNm}, '%')
+
+					<if test='prdtNm != null and prdtNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+
+				) OR ( A.NPRDT_NM LIKE CONCAT('%', #{prdtNm}, '%')
+
+					<if test='prdtNm != null and prdtNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+
+				) OR ( A.PRDT_CD LIKE CONCAT('%', #{prdtNm}, '%')
+
+					<if test='prdtNm != null and prdtNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+
+				) )
+			</if>
+		</if>
+		<if test='prdtChgYmd != null and prdtChgYmd != ""'>
+			AND A.PRDT_CHG_YMD = #{prdtChgYmd}
+		</if>
+		<if test='prdtCfcd != null and prdtCfcd != ""'>
+			AND A.PRDT_CFCD = #{prdtCfcd}
+		</if>
+		<if test='mnspccCfcd != null and mnspccCfcd != ""'>
+			AND A.MNSPCC_CFCD = #{mnspccCfcd}
+		</if>
+		<if test='clusItmClcd != null and clusItmClcd != ""'>
+			AND A.CLUS_ITM_CLCD = #{clusItmClcd}
+		</if>
+		<if test='rquSelYn != null and rquSelYn != ""'>
+			AND A.RQU_SEL_YN = #{rquSelYn}
+		</if>
+	</select>
+
+	<select id="getExcelList_TB_CLUS_ITM_SET_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.SearchPrdDto"
+		resultType="com.cgmoffice.api.cnt.dto.PrdClusExcelDto"
+	>
+	/* api.sys.condPrdtmng.getExcelList_TB_CLUS_ITM_SET_MST */
+		SELECT
+			A.CLUS_ITM_CD clusItmCd /* 약관항목코드 */
+			,A.CLUS_ITM_NM clusItmNm /* 약관항목명 */
+			,A.CLUS_ITM_CLCD clusItmClcd /* 약관항목분류코드 */
+			<!-- <if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm
+				,TO_CHAR(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s')  crtDtm
+				,DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s')  mdfDtm
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(A.CRT_DTM, 'yyyy-MM-dd HH:mm:ss')  crtDtm
+				,FORMAT(A.MDF_DTM, 'yyyy-MM-dd HH:mm:ss')  mdfDtm
+			</if>
+			,A.CRTR
+			,A.UPDUSR -->
+			,A.PRDT_CD prdtCd /* 주계약상품코드 */
+			,A.SCREN_DISP_ORD screnDispOrd /* 목차순서 */
+			,A.SN sn /* 약관생성순서 */
+			,A.DEL_YN delYn /* 약관생성순서 */
+			,A.DATA_TRANS_STTCD dataTransSttcd /* 데이터전송상태코드 */
+		FROM
+			TB_CLUS_ITM_SET_MST A
+			LEFT OUTER JOIN TB_CM_FILE C ON A.FILE_NO = C.FILE_NO
+			,TB_PRDT_INFO_MST B
+		WHERE 1=1
+			AND A.CLUS_ITM_CD = B.PRDT_CD
+			AND A.PRDT_CD = #{prdtCd}
+			AND B.DEL_YN = 'N'
+			AND A.DEL_YN = 'N'
+		ORDER BY A.SCREN_DISP_ORD
+	</select>
+
+	<select id="getInfo_TB_PRDT_INFO_CHG_LST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto$PrdInfoChgLstDto"
+		resultType="com.cgmoffice.api.cnt.dto.PrdInfoDto$PrdInfoChgLstDto"
+		>
+	/* api.sys.condPrdtmng.getInfo_TB_PRDT_INFO_CHG_LST */
+		SELECT
+			A.CMPNY_CODE
+			,B.CD_NM      cmpnyNm
+			,A.PRDT_CD
+			,A.SPRDT_NM
+			,A.NPRDT_NM
+			,A.PRDT_CFCD
+			,A.PM_STOP_YMD
+			,A.RGST_YMD
+			,A.MDF_YMD
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm
+				,TO_CHAR(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s') AS crtDtm
+				,DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s') AS mdfDtm
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(A.CRT_DTM, 'yyyy-MM-dd HH:mm:ss') AS crtDtm
+				,FORMAT(A.MDF_DTM, 'yyyy-MM-dd HH:mm:ss') AS mdfDtm
+			</if>
+			,A.CRTR
+			,A.UPDUSR
+			,A.PM_BEGIN_YMD
+			,A.PRDT_TEXT
+			,A.INSKND_CD
+			,A.MNSPCC_CFCD
+			,A.CLUS_ITM_CLCD
+			,A.PRDT_CHG_YMD
+			,A.FILE_NO
+			,C.FILE_NM
+			,A.RQU_SEL_YN
+		FROM
+			TB_PRDT_INFO_CHG_LST A
+			LEFT OUTER JOIN TB_CM_FILE C ON A.FILE_NO = C.FILE_NO
+			,TB_DTL_CD B
+		WHERE 1=1
+			AND A.CMPNY_CODE = B.CD
+			AND B.GRP_CD = 'CMPNY_CODE' /* 공통코드 보험사 */
+			AND PRDT_CD = #{prdtCd}
+		<if test='dbDriverId != "sqlserver"'>
+			ORDER BY PRDT_CHG_YMD DESC
+		</if>
+	</select>
+
+	<select id="getInfo_TB_PRDT_INFO_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+		resultType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+	>
+	/* api.sys.condPrdtmng.getInfo_TB_PRDT_INFO_MST */
+		SELECT
+			A.CMPNY_CODE
+			,D.CD_NM      cmpnyNm
+			,A.PRDT_CD
+			,A.SPRDT_NM
+			,A.NPRDT_NM
+			,A.PRDT_CFCD
+			,A.PM_STOP_YMD
+			,A.RGST_YMD
+			,A.MDF_YMD
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(A.CRT_DTM, 'YYYY-MM-DD HH24:MI:SS') crtDtm
+				,TO_CHAR(A.MDF_DTM, 'YYYY-MM-DD HH24:MI:SS') mdfDtm
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(A.CRT_DTM, '%Y-%m-%d %H:%i:%s')  crtDtm
+				,DATE_FORMAT(A.MDF_DTM, '%Y-%m-%d %H:%i:%s')  mdfDtm
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(A.CRT_DTM, 'yyyy-MM-dd HH:mm:ss')  crtDtm
+				,FORMAT(A.MDF_DTM, 'yyyy-MM-dd HH:mm:ss')  mdfDtm
+			</if>
+			,A.CRTR
+			,A.UPDUSR
+			,A.PM_BEGIN_YMD
+			,A.PRDT_TEXT
+			,A.INSKND_CD
+			,A.MNSPCC_CFCD
+			,A.CLUS_ITM_CLCD
+			,A.PRDT_CHG_YMD
+			,B.FILE_NO
+			,C.FILE_NM
+			,A.RQU_SEL_YN
+		FROM
+			TB_PRDT_INFO_MST A
+			,TB_PRDT_INFO_CHG_LST B
+			LEFT OUTER JOIN TB_CM_FILE C ON B.FILE_NO = C.FILE_NO
+			,TB_DTL_CD D
+		WHERE 1=1
+			AND A.DEL_YN = 'N'
+			AND A.CMPNY_CODE = D.CD
+			AND D.GRP_CD = 'CMPNY_CODE' /* 공통코드 보험사 */
+			AND A.PRDT_CHG_YMD = B.PRDT_CHG_YMD
+			AND A.PRDT_CD = B.PRDT_CD
+			AND A.PRDT_CD = #{prdtCd}
+	</select>
+
+	<select id="getInfoIgnoreDel_TB_PRDT_INFO_MST"
+		parameterType="string"
+		resultType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+	>
+	/* api.sys.condPrdtmng.getInfo_TB_PRDT_INFO_MST */
+		SELECT
+			A.*
+		FROM
+			TB_PRDT_INFO_MST A
+		WHERE 1=1
+			AND A.PRDT_CD = #{prdtCd}
+	</select>
+
+	<update id="delete_TB_PRDT_INFO_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+		>
+	/* api.sys.condPrdtmng.delete_TB_PRDT_INFO_MST */
+		UPDATE TB_PRDT_INFO_MST SET
+			DEL_YN = 'Y'
+		WHERE 1=1
+			AND PRDT_CD = #{prdtCd}
+	</update>
+
+	<delete id="delete_TB_PRDT_INFO_CHG_LST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+		>
+	/* api.sys.condPrdtmng.delete_TB_PRDT_INFO_CHG_LST */
+		DELETE FROM TB_PRDT_INFO_CHG_LST
+		WHERE 1=1
+			AND PRDT_CD = #{prdtCd}
+	</delete>
+
+	<insert id="insert_TB_PRDT_INFO_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+		>
+	/* api.sys.condPrdtmng.insert_TB_PRDT_INFO_MST */
+		INSERT INTO TB_PRDT_INFO_MST (
+			CMPNY_CODE
+			,PRDT_CD
+			,SPRDT_NM
+			,NPRDT_NM
+			,PRDT_CFCD
+			,PM_BEGIN_YMD
+			,PM_STOP_YMD
+			,PRDT_CHG_YMD
+			,RGST_YMD
+			,MDF_YMD
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,UPDUSR
+			,PRDT_TEXT
+			,INSKND_CD
+			,MNSPCC_CFCD
+			,CLUS_ITM_CLCD
+			,DEL_YN
+			,PAGE_FLD
+			,RQU_SEL_YN
+		) VALUES (
+			#{cmpnyCode}
+			,#{prdtCd}
+			,#{sprdtNm}
+			,#{nprdtNm}
+			,#{prdtCfcd}
+			,#{pmBeginYmd}
+			,#{pmStopYmd}
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,COALESCE(#{prdtChgYmd}, TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD'))
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,COALESCE(#{prdtChgYmd}, DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d'))
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,COALESCE(#{prdtChgYmd}, FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd'))
+			</if>
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD')
+				,TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD')
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d')
+				,DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d')
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd')
+				,FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd')
+			</if>
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{updusr}
+			,#{prdtText}
+			,#{inskndCd}
+			,#{mnspccCfcd}
+			,#{clusItmClcd}
+			,'N'
+			,#{pageFld}
+			,#{rquSelYn}
+		)
+	</insert>
+
+	<insert id="insert_TB_PRDT_INFO_CHG_LST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+		>
+	/* api.sys.condPrdtmng.insert_TB_PRDT_INFO_CHG_LST */
+		INSERT INTO TB_PRDT_INFO_CHG_LST (
+			CMPNY_CODE
+			,PRDT_CD
+			,SPRDT_NM
+			,NPRDT_NM
+			,PRDT_CFCD
+			,PM_BEGIN_YMD
+			,PM_STOP_YMD
+			,PRDT_CHG_YMD
+			,PRDT_END_YMD
+			,RGST_YMD
+			,MDF_YMD
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,UPDUSR
+			,PRDT_TEXT
+			,INSKND_CD
+			,MNSPCC_CFCD
+			,CLUS_ITM_CLCD
+			,FILE_NO
+			,RQU_SEL_YN
+		) VALUES (
+			#{cmpnyCode}
+			,#{prdtCd}
+			,#{sprdtNm}
+			,#{nprdtNm}
+			,#{prdtCfcd}
+			,#{pmBeginYmd}
+			,#{pmStopYmd}
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,COALESCE(#{prdtChgYmd}, TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD'))
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,COALESCE(#{prdtChgYmd}, DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d'))
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,COALESCE(#{prdtChgYmd}, FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd'))
+			</if>
+			,#{prdtEndYmd}
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD')
+				,TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD')
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d')
+				,DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d')
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd')
+				,FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd')
+			</if>
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{updusr}
+			,#{prdtText}
+			,#{inskndCd}
+			,#{mnspccCfcd}
+			,#{clusItmClcd}
+			,#{fileNo}
+			,#{rquSelYn}
+		)
+	</insert>
+
+	<update id="update_TB_PRDT_INFO_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+		>
+	/* api.sys.condPrdtmng.update_TB_PRDT_INFO_MST */
+		UPDATE TB_PRDT_INFO_MST SET
+			CMPNY_CODE = #{cmpnyCode}
+			,SPRDT_NM = #{sprdtNm}
+			,NPRDT_NM = #{nprdtNm}
+			,PRDT_CFCD = #{prdtCfcd}
+			,PM_BEGIN_YMD = #{pmBeginYmd}
+			,PM_STOP_YMD = #{pmStopYmd}
+			,PRDT_CHG_YMD = #{prdtChgYmd}
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,MDF_YMD = TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD')
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,MDF_YMD = DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d')
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,MDF_YMD = FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd')
+			</if>
+			,MDF_DTM = CURRENT_TIMESTAMP
+			,UPDUSR = #{updusr}
+			,PRDT_TEXT = #{prdtText}
+			,INSKND_CD = #{inskndCd}
+			,MNSPCC_CFCD = #{mnspccCfcd}
+			,CLUS_ITM_CLCD = #{clusItmClcd}
+			,PAGE_FLD = #{pageFld}
+			,RQU_SEL_YN = #{rquSelYn}
+			,DEL_YN = 'N'
+		WHERE 1=1
+			AND PRDT_CD = #{prdtCd}
+	</update>
+
+	<update id="update_TB_PRDT_INFO_CHG_LST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+		>
+	/* api.sys.condPrdtmng.update_TB_PRDT_INFO_CHG_LST */
+		UPDATE TB_PRDT_INFO_CHG_LST SET
+			CMPNY_CODE = #{cmpnyCode}
+			,SPRDT_NM = #{sprdtNm}
+			,NPRDT_NM = #{nprdtNm}
+			,PRDT_CFCD = #{prdtCfcd}
+			,PM_BEGIN_YMD = #{pmBeginYmd}
+			,PM_STOP_YMD = #{pmStopYmd}
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				,MDF_YMD = TO_CHAR(CURRENT_TIMESTAMP, 'YYYYMMDD')
+			</if>
+			<if test='dbDriverId == "mysql"'>
+				,MDF_YMD = DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d')
+			</if>
+			<if test='dbDriverId == "sqlserver"'>
+				,MDF_YMD = FORMAT(CURRENT_TIMESTAMP, 'yyyyMMdd')
+			</if>
+			,MDF_DTM = CURRENT_TIMESTAMP
+			,UPDUSR = #{updusr}
+			,PRDT_TEXT = #{prdtText}
+			,INSKND_CD = #{inskndCd}
+			,MNSPCC_CFCD = #{mnspccCfcd}
+			,CLUS_ITM_CLCD = #{clusItmClcd}
+			,PRDT_END_YMD = #{prdtEndYmd}
+			,FILE_NO = #{fileNo}
+			,RQU_SEL_YN = #{rquSelYn}
+		WHERE 1=1
+			AND PRDT_CD = #{prdtCd}
+			AND PRDT_CHG_YMD = #{prdtChgYmd}
+	</update>
+
+	<select id="chkExist_TB_PRDT_INFO_MST"
+		resultType="int"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+		>
+	/* api.sys.condPrdtmng.chkExist_TB_PRDT_INFO_MST */
+		SELECT
+			COUNT(*)
+		FROM
+			TB_PRDT_INFO_MST A
+		WHERE 1=1
+			AND A.PRDT_CD = #{prdtCd}
+	</select>
+
+	<update id="update_TB_CLUS_ITM_SET_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdInfoDto"
+	>
+	/* api.sys.condPrdtmng.update_TB_CLUS_ITM_SET_MST */
+		UPDATE TB_CLUS_ITM_SET_MST SET
+			CLUS_ITM_NM = #{nprdtNm}
+			,CLUS_ITM_CLCD = #{clusItmClcd}
+			,MDF_DTM = CURRENT_TIMESTAMP
+			,UPDUSR = #{updusr}
+			,FILE_NO = #{fileNo}
+			,DATA_TRANS_STTCD = 'S'  /* S:전송대기, Y:전송성공, N:전송실패, F:시스템오류 */
+		WHERE 1=1
+			AND CLUS_ITM_CD = #{prdtCd}
+	</update>
+
+	<select id="chk_TB_PRDT_INFO_CHG_LST"
+		parameterType="java.util.Map"
+		resultType="int"
+	>
+	/* api.sys.condPrdtmng.chk_TB_PRDT_INFO_CHG_LST */
+		SELECT
+			COUNT(*)
+		FROM
+			TB_PRDT_INFO_CHG_LST A
+		WHERE 1=1
+			AND A.PRDT_CHG_YMD = #{prdtChgYmd}
+			AND A.PRDT_CD = #{prdtCd}
+	</select>
+
+	<select id="getMaxCode_TB_CLUS_ITM_SET_MST"
+		parameterType="cmmnMap"
+		resultType="string"
+	>
+	/* api.sys.condPrdtmng.getMaxCode_TB_CLUS_ITM_SET_MST */
+		SELECT
+			MAX(A.PRDT_CD)
+		FROM TB_PRDT_INFO_MST A
+		WHERE 1=1
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				AND A.PRDT_CD LIKE #{prdtCdPrefix} || '%'
+			</if>
+			<if test='dbDriverId == "mysql" or dbDriverId == "sqlserver"'>
+				AND A.PRDT_CD LIKE CONCAT(#{prdtCdPrefix}, '%')
+			</if>
+		<if test='rquSelYn != "Y"'>
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				<![CDATA[
+					AND A.PRDT_CD < #{prdtCdPrefix} || '9000'
+				]]>
+			</if>
+			<if test='dbDriverId == "mysql" or dbDriverId == "sqlserver"'>
+				<![CDATA[
+					AND A.PRDT_CD < CONCAT(#{prdtCdPrefix}, '9000')
+				]]>
+			</if>
+		</if>
+		<if test='rquSelYn == "Y"'>
+			<if test='dbDriverId == "oracle" or dbDriverId == "postgresql" or dbDriverId == "db2"'>
+				<![CDATA[
+					AND A.PRDT_CD >= #{prdtCdPrefix} || '9000'
+				]]>
+			</if>
+			<if test='dbDriverId == "mysql" or dbDriverId == "sqlserver"'>
+				<![CDATA[
+					AND A.PRDT_CD >= CONCAT(#{prdtCdPrefix}, '9000')
+				]]>
+			</if>
+		</if>
+	</select>
+
+</mapper>

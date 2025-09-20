@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='sample.sampleExcelMng'>
+
+	<select id="getList"
+		parameterType="string"
+		resultType="map"
+	>
+		SELECT
+			A.IDX
+			,A.USER_NAME
+			,A.USER_AGE
+		FROM SAMPLE_TEST01 A
+		WHERE 1=1
+			AND A.USER_NAME LIKE '%' || #{userName} || '%'
+		ORDER BY USER_NAME
+	</select>
+
+</mapper>

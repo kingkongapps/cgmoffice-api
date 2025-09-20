@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.MenuMng'>
+
+	<!-- 메뉴 목록 조회(하위 목록 조회 포함) -->
+	<select id="getListPage_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.SearchMenuCdDto"
+		resultType="com.cgmoffice.api.sys.dto.MenuCdDto"
+	>
+	/*api.sys.MenuMng.getListPage_TB_MENU*/
+		SELECT
+			A.MENU_CD menuCd /* 메뉴코드 */
+			,A.MENU_NM menuNm /* 메뉴명 */
+			,A.MENU_TYP_CD menuTypCd /* 메뉴유형코드 */
+			,CASE A.MENU_TYP_CD
+		        WHEN 'M' THEN '메뉴'
+		        WHEN 'F' THEN '폴더'
+		        ELSE ''
+		    END AS menuTypCdNm /* 메뉴구분코드 */
+			,A.MENU_CFCD menuCfcd /* 메뉴구분코드 */
+			,A.MENU_LEV menuLev /* 메뉴레벨 */
+			,A.MENU_DTEXT menuDtext /* 메뉴상세내용 */
+			,A.MENU_DISP_YN menuDispYn /* 메뉴표시여부 */
+			,A.PGID pgid /* 프로그램아이디 */
+			,A.UPPR_MENU_CD upprMenuCd /* 상위메뉴코드 */
+			,A.SORT_NO sortNo /* 정렬순서 */
+			,(SELECT B.MENU_NM FROM TB_MENU B WHERE B.MENU_CD = A.UPPR_MENU_CD ) upprMenuNm /*상위메뉴명*/
+		FROM TB_MENU A
+		WHERE 1=1
+		<if test='menuLev != null and menuLev != ""'>
+			AND MENU_LEV = #{menuLev}
+		</if>
+		<if test='menuNm != null and menuNm != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	                AND MENU_NM LIKE '%' || #{menuNm} || '%'
+	                <if test='menuNm != null and menuNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND MENU_NM LIKE CONCAT('%', #{menuNm}, '%')
+	                <if test='menuNm != null and menuNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND MENU_NM LIKE '%' + #{menuNm} + '%'
+	                <if test='menuNm != null and menuNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <otherwise>
+	                AND MENU_NM LIKE '%' || #{menuNm} || '%'
+	                <if test='menuNm != null and menuNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </otherwise>
+	        </choose>
+		</if>
+		<if test='menuCd != null and menuCd != ""'>
+			 <choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	                AND MENU_CD LIKE '%' || #{menuCd} || '%'
+	                <if test='menuCd != null and menuCd.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND MENU_CD LIKE CONCAT('%', #{menuCd}, '%')
+	                <if test='menuCd != null and menuCd.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND MENU_CD LIKE '%' + #{menuCd} + '%'
+	                <if test='menuCd != null and menuCd.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <otherwise>
+	                AND MENU_CD LIKE '%' || #{menuCd} || '%'
+	                <if test='menuCd != null and menuCd.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </otherwise>
+	        </choose>
+		</if>
+		<if test='upprMenuCd != null and upprMenuCd != ""'>
+			AND UPPR_MENU_CD  = #{upprMenuCd}
+		</if>
+		ORDER BY MENU_CD
+	</select>
+
+	<!-- 신규등록 -->
+	<insert id="insert_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.MenuCdDto"
+	>
+	/*api.sys.MenuMng.insert_TB_MENU*/
+		INSERT INTO TB_MENU(
+			MENU_CD,
+			DEL_YN,
+			CRT_DTM,
+			MDF_DTM,
+			CRTR,
+			AMDR,
+			MENU_NM,
+			UPPR_MENU_CD,
+			MENU_TYP_CD,
+			MENU_CFCD,
+			MENU_LEV,
+			MENU_DTEXT,
+			SORT_NO,
+			MENU_DISP_YN,
+			PGID
+		)VALUES(
+			#{menuCd},
+			'N',
+			CURRENT_TIMESTAMP,
+			CURRENT_TIMESTAMP,
+			#{user},
+			#{user},
+			#{menuNm},
+			#{upprMenuCd},
+			#{menuTypCd},
+			#{menuCfcd},
+			#{menuLev},
+			#{menuDtext},
+			#{sortNo},
+			#{menuDispYn},
+			#{pgid}
+		)
+
+	</insert>
+
+	<!-- 수정저장 -->
+	<update id="update_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.MenuCdDto"
+	>
+	/*api.sys.MenuMng.update_TB_MENU*/
+		UPDATE TB_MENU
+		SET MENU_CD = #{menuCd},
+			MDF_DTM = CURRENT_TIMESTAMP,
+			AMDR = #{user},
+			MENU_NM = #{menuNm},
+			UPPR_MENU_CD = #{upprMenuCd},
+			MENU_TYP_CD = #{menuTypCd},
+			MENU_CFCD = #{menuCfcd},
+			MENU_LEV = #{menuLev},
+			MENU_DTEXT = #{menuDtext},
+			SORT_NO = #{sortNo},
+			MENU_DISP_YN = #{menuDispYn},
+			PGID = #{pgid}
+		WHERE 1=1
+			AND MENU_CD = #{menuCd}
+
+	</update>
+
+	<!-- 삭제 -->
+	<delete id="delete_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.MenuCdDto"
+	>
+	/*api.sys.MenuMng.delete_TB_MENU*/
+		DELETE FROM TB_MENU
+		WHERE MENU_CD = #{menuCd}
+	</delete>
+
+	<!-- 메뉴코드 중복확인 -->
+	<select id="selectMenuCdYn_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.MenuCdDto"
+		resultType="String"
+	>
+	/*api.sys.MenuMng.selectMenuCdYn_TB_MENU*/
+		<choose>
+		  <!-- Oracle -->
+		  <when test="databaseId == 'oracle'">
+		  <![CDATA[
+		  /* oracle */
+		    SELECT CASE
+	             WHEN EXISTS (
+	               SELECT 1
+	               FROM TB_MENU A
+	               WHERE A.MENU_CD = #{menuCd}
+	             ) THEN 'true'
+	             ELSE 'false'
+	           END AS result
+		    FROM dual
+		    ]]>
+		  </when>
+
+		  <!-- DB2 -->
+		  <when test="databaseId == 'db2'">
+		  <![CDATA[
+		  /* db2 */
+		    SELECT CASE
+	             WHEN EXISTS (
+	               SELECT 1
+	               FROM TB_MENU A
+	               WHERE A.MENU_CD = #{menuCd}
+	             ) THEN 'true'
+	             ELSE 'false'
+	           END AS result
+		    FROM SYSIBM.SYSDUMMY1
+		    ]]>
+		  </when>
+
+		  <!-- PostgreSQL, MySQL , SQL Server -->
+		  <otherwise>
+		  <![CDATA[
+		  /* PostgreSQL, MySQL , SQL Server */
+		    SELECT CASE
+	             WHEN EXISTS (
+	               SELECT 1
+	               FROM TB_MENU A
+	               WHERE A.MENU_CD = #{menuCd}
+	             ) THEN 'true'
+	             ELSE 'false'
+	        END AS result
+	        ]]>
+		  </otherwise>
+		</choose>
+
+	</select>
+
+	<!-- 상위코드 확인 -->
+	<select id="selectUpprMenu_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.MenuCdDto"
+		resultType="com.cgmoffice.api.sys.dto.MenuCdDto"
+	>
+	/*api.sys.MenuMng.selectUpprMenu_TB_MENU*/
+		SELECT
+			A.MENU_CD menuCd,
+			A.MENU_NM menuNm,
+			A.MENU_LEV menuLev
+		FROM TB_MENU A
+		WHERE EXISTS (
+			SELECT 1
+			FROM TB_MENU
+			WHERE MENU_CD = #{upprMenuCd}
+			  AND MENU_LEV != '3'
+		)
+		AND A.MENU_CD = #{upprMenuCd}
+	</select>
+
+	<!-- 중복인지 확인 -->
+	<select id="selectCount_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.MenuCdDto"
+		resultType="int"
+	>
+	/*api.sys.MenuMng.selectCount_TB_MENU*/
+		SELECT count(1)
+		FROM TB_MENU A
+		WHERE UPPR_MENU_CD = #{upprMenuCd}
+		 	AND SORT_NO = #{sortNo}
+	</select>
+
+	<!-- 정렬순서 업데이트 하기 (+) -->
+	<update id="updatePlusSortNo_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.MenuCdDto"
+	>
+	/*api.sys.MenuMng.updatePlusSortNo_TB_MENU*/
+		UPDATE TB_MENU
+		SET SORT_NO = SORT_NO + 1
+		WHERE UPPR_MENU_CD = #{upprMenuCd}
+		<if test="sortNo != null and sortNo != ''">
+			AND SORT_NO <![CDATA[ >= ]]> #{sortNo}
+	   	</if>
+		<if test="oldSortNo != null and oldSortNo != ''">
+			AND SORT_NO <![CDATA[ <= ]]> #{oldSortNo}
+	   	</if>
+	</update>
+
+
+	<!-- 정렬순서 업데이트 하기 (-) -->
+	<update id="updateMinusSortNo_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.MenuCdDto"
+	>
+	/*api.sys.MenuMng.updateMinusSortNo_TB_MENU*/
+		UPDATE TB_MENU
+		SET SORT_NO = SORT_NO -1
+		WHERE UPPR_MENU_CD = #{upprMenuCd}
+		<if test="sortNo != null and sortNo != ''">
+			AND SORT_NO <![CDATA[ <= ]]> #{sortNo}
+	   	</if>
+		<if test="oldSortNo != null and oldSortNo != ''">
+			AND SORT_NO <![CDATA[ > ]]> #{oldSortNo}
+	   	</if>
+	</update>
+
+	<!-- 정렬순서 그룹 max -->
+	<select id="selectMaxSortNo_TB_MENU"
+		parameterType="com.cgmoffice.api.sys.dto.MenuCdDto"
+		resultType="String"
+	>
+	/*api.sys.MenuMng.selectMaxSortNo_TB_MENU*/
+		WITH sorted AS (
+		    SELECT
+		    	SORT_NO AS sortNo
+		    FROM TB_MENU
+		    WHERE UPPR_MENU_CD = #{upprMenuCd}
+		  ),
+		  grp AS (
+		    SELECT
+		    	sortNo,
+		        sortNo - ROW_NUMBER() OVER (ORDER BY sortNo) AS grpId
+		    FROM sorted
+		  ),
+		  groupData  AS (
+		    SELECT grpId,
+	           MIN(sortNo) AS minSortNo,
+	           MAX(sortNo) AS maxSortNo,
+	           COUNT(CASE
+			      WHEN sortNo = #{sortNo} THEN 1 END) AS sortMax
+		    FROM grp
+		    GROUP BY grpId
+		  )
+		  SELECT maxSortNo
+		  FROM groupData
+		  WHERE sortMax > 0
+	</select>
+
+
+</mapper>
+
+
+
+
+
+
+
+

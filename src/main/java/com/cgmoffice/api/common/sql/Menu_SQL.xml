@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.common.menu'>
+
+	<select id="getAllMenuList"
+		resultType="com.cgmoffice.api.common.dto.MenuDto"
+		>
+	/* api.common.menu.getAllMenuList */
+		SELECT
+			A.MENU_CD
+			,A.DEL_YN
+			,A.MENU_NM
+			,A.UPPR_MENU_CD
+			,A.MENU_TYP_CD
+			,A.MENU_CFCD
+			,A.MENU_LEV
+			,A.MENU_DTEXT
+			,A.SORT_NO
+			,A.MENU_DISP_YN
+			,A.ICON
+		FROM TB_MENU A
+		WHERE 1=1
+			AND DEL_YN = 'N'
+			AND MENU_DISP_YN = 'Y'
+	</select>
+
+	<select id="getAuthMenuList"
+		parameterType="string"
+		resultType="com.cgmoffice.api.common.dto.AuthMenuDto"
+	>
+	/* api.common.menu.getAuthMenuList */
+		SELECT
+			A.AUTH_CD
+			,A.MENU_CD
+			,A.SELECT_YN
+			,A.INSERT_YN
+			,A.UPDATE_YN
+			,A.DELETE_YN
+			,A.EXCEL_YN
+		FROM
+			TB_AUTH A
+		WHERE 1=1
+			AND A.AUTH_CD = #{authCd}
+	</select>
+
+
+</mapper>

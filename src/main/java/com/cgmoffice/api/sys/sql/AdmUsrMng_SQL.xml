@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.AdmUsrMng'>
+
+	<!-- 관리자 목록조회 -->
+	<select id="getList_TB_MEM"
+		parameterType="com.cgmoffice.api.sys.dto.SearchAdmUsrDto"
+		resultType="com.cgmoffice.api.sys.dto.AdmUsrDto"
+	>
+	/*api.sys.AdmUsrMng.getList_TB_MEM*/
+		SELECT
+			A.MEM_ID memId /* 멤버아이디 */
+			,A.MEM_NM memNm /* 성명 */
+			,A.USE_YN useYn /* 사용여부 */
+			,A.EMAIL email /* 이메일 */
+			,A.LOGIN_CNT loginCnt /* 로그인실패횟수 */
+			,A.COM_CODE comCode /* 계열사코드 */
+			,(SELECT B.CD_NM FROM TB_DTL_CD B WHERE B.GRP_CD = 'CMPNY_CODE' AND A.COM_CODE = B.CD) comCodeNm
+			,A.AUTH_CD authCd /* 권한코드 */
+			,(SELECT DISTINCT B.AUTH_Nm
+				FROM TB_AUTH B
+				WHERE B.AUTH_CD = A.AUTH_CD) cdNm /* 권한명 */
+			,A.LAST_LGN_DT lastLgnDt /* 최종접속일 */
+			,A.FIND_AC_YN findAcYn /* 계정찾기요청여부 */
+			,A.DEL_YN delYn /* 삭제여부 */
+			,A.CRT_DTM crtDtm /* 생성일시 */
+			,A.MDF_DTM mdfDtm /* 수정일시 */
+			,(SELECT DISTINCT B.AUTH_GRP_CD
+				FROM TB_AUTH B
+				WHERE B.AUTH_CD = A.AUTH_CD) authGrpCd /* 권한그룹코드 */
+		FROM TB_MEM A
+		WHERE 1=1
+		<if test='memId != null and memId != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	                AND MEM_ID LIKE '%' || #{memId} || '%'
+	                <if test='memId != null and memId.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND MEM_ID LIKE CONCAT('%', #{memId}, '%')
+	                <if test='memId != null and memId.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND MEM_ID LIKE '%' + #{memId} + '%'
+	                <if test='memId != null and memId.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <otherwise>
+	                AND A.MEM_ID LIKE '%'||#{memId}||'%'
+	                <if test='memId != null and memId.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </otherwise>
+	        </choose>
+		</if>
+		<if test='memNm != null and memNm != ""'>
+			<choose>
+	            <when test="databaseId == 'oracle' or databaseId == 'postgresql' or databaseId == 'db2'">
+	                AND MEM_NM LIKE '%' || #{memNm} || '%'
+	                <if test='memNm != null and memNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'mysql'">
+	                AND MEM_NM LIKE CONCAT('%', #{memNm}, '%')
+	                <if test='memNm != null and memNm.contains("\\\\")'>
+						ESCAPE '\\'
+					</if>
+	            </when>
+	            <when test="databaseId == 'sqlserver'">
+	                AND MEM_NM LIKE '%' + #{memNm} + '%'
+	                <if test='memNm != null and memNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </when>
+	            <otherwise>
+	               AND A.MEM_NM LIKE '%'||#{memNm}||'%'
+	               <if test='memNm != null and memNm.contains("\\")'>
+						ESCAPE '\'
+					</if>
+	            </otherwise>
+	        </choose>
+		</if>
+		<if test='comCode != null and comCode != ""'>
+            AND A.COM_CODE = #{comCode}
+		</if>
+		ORDER BY A.CRT_DTM DESC
+	</select>
+
+
+	<!-- 관리자 신규저장 -->
+	<insert id="insert_TB_MEM"
+		parameterType="com.cgmoffice.api.sys.dto.AdmUsrDto"
+	>
+	/* api.sys.AdmUsrMng.insert_TB_MEM */
+		INSERT INTO TB_MEM (
+			MEM_ID
+			,PASSWD
+			,MEM_NM
+			,USE_YN
+			,EMAIL
+			,LOGIN_CNT
+			,AUTH_CD
+			,DEL_YN
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,AMDR
+			,COM_CODE
+			,FIND_AC_YN
+		) VALUES (
+			#{memId}
+			,#{passwd}
+			,#{memNm}
+			,#{useYn}
+			,#{email}
+			,0
+			,#{authCd}
+			,'N'
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{user}
+			,#{user}
+			,#{comCode}
+			,'Y'
+		)
+	</insert>
+
+
+	<!-- 관리자 수정저장 -->
+	<update id="update_TB_MEM"
+		parameterType="com.cgmoffice.api.sys.dto.AdmUsrDto"
+	>
+	/* api.sys.AdmUsrMng.update_TB_MEM */
+		<choose>
+		  <when test='passwd != null and passwd != ""'>
+			UPDATE TB_MEM
+			SET
+				PASSWD = #{passwd},
+				MDF_DTM = CURRENT_TIMESTAMP,
+				FIND_AC_YN = #{findAcYn},
+				AMDR = #{user}
+			WHERE MEM_ID = #{memId}
+		  </when>
+		  <otherwise>
+			UPDATE TB_MEM
+			SET
+				MEM_NM = #{memNm},
+				USE_YN = #{useYn},
+				EMAIL = #{email},
+				AUTH_CD = #{authCd},
+				DEL_YN = #{delYn},
+				MDF_DTM = CURRENT_TIMESTAMP,
+				AMDR = #{user},
+				COM_CODE =#{comCode}
+			WHERE MEM_ID = #{memId}
+		  </otherwise>
+		</choose>
+	</update>
+
+
+	<!-- 관리자 아이디 중복확인 -->
+	<select id="selectMemIdYn_TB_MEM"
+		parameterType="com.cgmoffice.api.sys.dto.AdmUsrDto"
+		resultType="String"
+	>
+	/* api.sys.AdmUsrMng.selectMemIdYn_TB_MEM */
+		<choose>
+		  <!-- Oracle -->
+		  <when test="databaseId == 'oracle'">
+		  <![CDATA[
+		  /* oracle */
+			SELECT CASE
+			  	WHEN EXISTS (
+			    	SELECT 1
+				    FROM TB_MEM A
+				    WHERE A.MEM_ID = #{memId}
+			   	) THEN 'true'
+			   	ELSE 'false'
+			END AS result
+			FROM dual
+		  ]]>
+		  </when>
+
+		  <!-- DB2 -->
+		  <when test="databaseId == 'db2'">
+		  <![CDATA[
+		  /* db2 */
+			SELECT CASE
+			  	WHEN EXISTS (
+			    	SELECT 1
+				    FROM TB_MEM A
+				    WHERE A.MEM_ID = #{memId}
+			   	) THEN 'true'
+			   	ELSE 'false'
+			END AS result
+			FROM SYSIBM.SYSDUMMY1
+		    ]]>
+		  </when>
+
+		  <!-- PostgreSQL, MySQL , SQL Server -->
+		  <otherwise>
+		  <![CDATA[
+		  /* PostgreSQL, MySQL , SQL Server */
+			SELECT CASE
+			  	WHEN EXISTS (
+			    	SELECT 1
+				    FROM TB_MEM A
+				    WHERE A.MEM_ID = #{memId}
+			   	) THEN 'true'
+			   	ELSE 'false'
+			END AS result
+		  	]]>
+		  </otherwise>
+		</choose>
+
+	</select>
+
+	<!-- 관리자 권한 그룹 -->
+	<select id="selectAuthCd_TB_AUTH"
+		parameterType="com.cgmoffice.api.sys.dto.AdmUsrDto"
+		resultType="com.cgmoffice.api.sys.dto.AdmUsrDto"
+	>
+	/* api.sys.AdmUsrMng.selectAuthCd_TB_AUTH */
+		SELECT DISTINCT A.AUTH_CD authCd,
+			A.AUTH_NM authNm,
+			A.AUTH_GRP_CD authGrpCd
+		FROM TB_AUTH A
+		WHERE 1=1
+		<if test='authGrpCd != null and authGrpCd != ""'>
+			AND A.AUTH_GRP_CD = #{authGrpCd}
+		</if>
+		ORDER BY AUTH_CD
+	</select>
+
+
+</mapper>
+
+
+
+
+
+
+

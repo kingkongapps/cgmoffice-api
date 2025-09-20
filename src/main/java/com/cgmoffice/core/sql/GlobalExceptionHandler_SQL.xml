@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='globalexceptionhandler'>
+
+	<insert id="insertErrLog"
+		parameterType="com.cgmoffice.core.dto.SysErrlogLstDto"
+	>
+	/* globalexceptionhandler.insertErrLog */
+		INSERT INTO TB_SYS_ERRLOG_LST (
+			ERR_LOGID
+			,OCCUR_DTM
+			,SYS_DLNG_CFCD
+			,DLNG_TIME
+			,REQR
+			,ERR_CD
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,AMDR
+			,ERR_DTL
+			,MENU_NM
+			,METH_NM
+		) VALUES (
+			#{errLogid}
+			,#{occurDtm}
+			,#{sysDlngCfcd}
+			,#{dlngTime}
+			,#{reqr}
+			,#{errCd}
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,#{crtr}
+			,#{amdr}
+			,#{errDtl}
+			,#{menuNm}
+			,#{methNm}
+		)
+	</insert>
+
+</mapper>

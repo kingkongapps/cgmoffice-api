@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.cnt.pdfMng'>
+
+	<!-- 상품 약관 항목 조회 -->
+	<select id="selectMnClusMppgList_TB_CLUS_ITM_SET_MST"
+		parameterType="com.cgmoffice.api.cnt.dto.SearchMnClusMppgDto"
+		resultType="com.cgmoffice.api.cnt.dto.MnClusMppgDto"
+	>
+		<choose>
+			<when test='databaseId == "oracle" or databaseId == "postgresql" or databaseId == "db2"'>
+				<![CDATA[
+					/* api.cnt.pdfMng.selectMnClusMppgList_TB_CLUS_ITM_SET_MST */
+					SELECT DISTINCT
+						A.CLUS_ITM_CD clusItmCd /* 약관항목코드 */
+						,(SELECT CD_NM FROM TB_DTL_CD
+								WHERE CD = A.CLUS_ITM_CLCD
+								AND GRP_CD = 'CLUS_ITM_CLCD') || '(' || A.CLUS_ITM_CLCD || ')' clusItmClcd /* 항목분류 */
+						,A.CLUS_ITM_NM clusItmNm /* 약관항목명(상품약관구성) */
+						,D.INSKND_CD inskndCd /* 보종코드 */
+						,A.PRDT_CD prdtCd /* 상품코드 */
+						,A.SN sn /* 약관생성순서 */
+						,A.SCREN_DISP_ORD screnDispOrd /* 목차순서 */
+						,A.FILE_NO fileNo /* 파일넘버 */
+						,C.FILE_NM fileNm /* 파일명 */
+						,B.CMPNY_CODE cmpnyCode /* 회사코드 */
+						,B.PAGE_FLD pageFld /* 목차PDF하단페이징높이 */
+					FROM
+						TB_CLUS_ITM_SET_MST A
+						LEFT OUTER JOIN TB_CM_FILE C ON A.FILE_NO = C.FILE_NO
+						,TB_PRDT_INFO_MST B
+						INNER JOIN TB_PRDT_INFO_CHG_LST D ON B.PRDT_CD = D.PRDT_CD
+					WHERE 1=1
+						AND A.CLUS_ITM_CD = B.PRDT_CD
+						AND B.DEL_YN = 'N'
+						AND A.DEL_YN = 'N'
+				]]>
+					<if test='prdtCd != null and prdtCd != ""'>
+						AND A.PRDT_CD = #{prdtCd}
+					</if>
+					<if test='cmpnyCode != null and cmpnyCode != ""'>
+						AND B.CMPNY_CODE = #{cmpnyCode}
+					</if>
+					<if test='prdtCfcd != null and prdtCfcd != ""'>
+						AND D.PRDT_CFCD = #{prdtCfcd}
+					</if>
+			</when>
+			<when test='databaseId == "mysql" or databaseId == "sqlserver"'>
+				<![CDATA[
+					/* api.cnt.pdfMng.selectMnClusMppgList_TB_CLUS_ITM_SET_MST */
+					SELECT DISTINCT
+						A.CLUS_ITM_CD clusItmCd /* 약관항목코드 */
+						,CONCAT((SELECT CD_NM FROM TB_DTL_CD
+							WHERE CD = A.CLUS_ITM_CLCD
+							AND GRP_CD = 'CLUS_ITM_CLCD') , '(' , A.CLUS_ITM_CLCD , ')') clusItmClcd /* 항목분류 */
+						,A.CLUS_ITM_NM clusItmNm /* 약관항목명(상품약관구성) */
+						,D.INSKND_CD inskndCd /* 보종코드 */
+						,A.PRDT_CD prdtCd /* 상품코드 */
+						,A.SN sn /* 약관생성순서 */
+						,A.SCREN_DISP_ORD screnDispOrd /* 목차순서 */
+						,A.FILE_NO fileNo /* 파일넘버 */
+						,C.FILE_NM fileNm /* 파일명 */
+						,B.CMPNY_CODE cmpnyCode /* 회사코드 */
+						,B.PAGE_FLD pageFld /* 목차PDF하단페이징높이 */
+					FROM
+						TB_CLUS_ITM_SET_MST A
+						LEFT OUTER JOIN TB_CM_FILE C ON A.FILE_NO = C.FILE_NO
+						,TB_PRDT_INFO_MST B
+						INNER JOIN TB_PRDT_INFO_CHG_LST D ON B.PRDT_CD = D.PRDT_CD
+					WHERE 1=1
+						AND A.CLUS_ITM_CD = B.PRDT_CD
+						AND B.DEL_YN = 'N'
+						AND A.DEL_YN = 'N'
+				]]>
+					<if test='prdtCd != null and prdtCd != ""'>
+						AND A.PRDT_CD = #{prdtCd}
+					</if>
+					<if test='cmpnyCode != null and cmpnyCode != ""'>
+						AND B.CMPNY_CODE = #{cmpnyCode}
+					</if>
+					<if test='prdtCfcd != null and prdtCfcd != ""'>
+						AND D.PRDT_CFCD = #{prdtCfcd}
+					</if>
+			</when>
+		</choose>
+	</select>
+
+</mapper>

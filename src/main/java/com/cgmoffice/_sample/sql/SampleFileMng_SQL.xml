@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='sample.sampleFileMng'>
+
+	<insert id="setInfo"
+		parameterType="cmmnMap"
+	>
+		INSERT INTO SAMPLE_FILE_MNG (
+			MEMO
+			,FILE_INFO
+		) VALUES (
+			#{memo}
+			,#{fileInfo}
+		)
+	</insert>
+
+	<select id="getList"
+		resultType="com.cgmoffice._sample.dto.SampleFileDto"
+	>
+		SELECT
+			A.IDX
+			,A.MEMO
+			,B.FILE_NM
+			,B.FILE_NO
+		FROM
+			SAMPLE_FILE_MNG A
+			,TB_CM_FILE B
+		WHERE 1=1
+			AND A.FILE_INFO = B.FILE_NO
+		ORDER BY A.IDX
+	</select>
+
+	<select id="getInfo"
+		parameterType="string"
+		resultType="com.cgmoffice._sample.dto.SampleFileDto"
+	>
+		SELECT
+			A.IDX
+			,A.MEMO
+			,A.FILE_INFO FILE_NO
+		FROM SAMPLE_FILE_MNG A
+		WHERE 1=1
+			AND A.IDX = #{idx}
+	</select>
+
+	<delete id="delInfo"
+		parameterType="string"
+	>
+		DELETE FROM SAMPLE_FILE_MNG
+		WHERE 1=1
+			AND idx = #{idx}
+	</delete>
+
+</mapper>

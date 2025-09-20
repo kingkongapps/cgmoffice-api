@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='scheduledtasks'>
+
+	<!-- 해당 테이블의 모든 데이터를 조회한다. -->
+	<select id="selectTableDataAllList"
+		parameterType="string"
+		resultType="java.util.LinkedHashMap"
+	>
+		/* scheduledtasks.selectTableDataAllList */
+		SELECT *
+		<choose>
+			<when test='dbTable == "TB_AUTH"'>
+				FROM TB_AUTH
+			</when>
+			<when test='dbTable == "TB_CLUS_ADD_INF"'>
+				FROM TB_CLUS_ADD_INF
+			</when>
+			<when test='dbTable == "TB_CLUS_ITM_SET_MST"'>
+				FROM TB_CLUS_ITM_SET_MST
+			</when>
+			<when test='dbTable == "TB_CM_FILE"'>
+				FROM TB_CM_FILE
+			</when>
+			<when test='dbTable == "TB_DTL_CD"'>
+				FROM TB_DTL_CD
+			</when>
+			<when test='dbTable == "TB_ETC_CLUS_INFO"'>
+				FROM TB_ETC_CLUS_INFO
+			</when>
+			<when test='dbTable == "TB_GRP_CD"'>
+				FROM TB_GRP_CD
+			</when>
+			<when test='dbTable == "TB_INDV_CLUS_CRTMXT_LST"'>
+				FROM TB_INDV_CLUS_CRTMXT_LST
+			</when>
+			<when test='dbTable == "TB_INDV_CLUS_CRT_MPPG_LST"'>
+				FROM TB_INDV_CLUS_CRT_MPPG_LST
+			</when>
+			<when test='dbTable == "TB_INDV_CLUS_MERGEADD_INF"'>
+				FROM TB_INDV_CLUS_MERGEADD_INF
+			</when>
+			<when test='dbTable == "TB_INDV_CLUS_MERGE_INF"'>
+				FROM TB_INDV_CLUS_MERGE_INF
+			</when>
+			<when test='dbTable == "TB_INDV_CLUS_PRDT_MST"'>
+				FROM TB_INDV_CLUS_PRDT_MST
+			</when>
+			<when test='dbTable == "TB_INDV_CLUS_RCV_DTL"'>
+				FROM TB_INDV_CLUS_RCV_DTL
+			</when>
+			<when test='dbTable == "TB_INDV_CLUS_RCV_MST"'>
+				FROM TB_INDV_CLUS_RCV_MST
+			</when>
+			<when test='dbTable == "TB_LGN_LST"'>
+				FROM TB_LGN_LST
+			</when>
+			<when test='dbTable == "TB_MEM"'>
+				FROM TB_MEM
+			</when>
+			<when test='dbTable == "TB_MENU"'>
+				FROM TB_MENU
+			</when>
+			<when test='dbTable == "TB_MSG"'>
+				FROM TB_MSG
+			</when>
+			<when test='dbTable == "TB_PRDT_CLUS_MST"'>
+				FROM TB_PRDT_CLUS_MST
+			</when>
+			<when test='dbTable == "TB_PRDT_ETC_CLUS_INFO"'>
+				FROM TB_PRDT_ETC_CLUS_INFO
+			</when>
+			<when test='dbTable == "TB_PRDT_INFO_CHG_LST"'>
+				FROM TB_PRDT_INFO_CHG_LST
+			</when>
+			<when test='dbTable == "TB_PRDT_INFO_MST"'>
+				FROM TB_PRDT_INFO_MST
+			</when>
+			<when test='dbTable == "TB_SYS_ERRLOG_LST"'>
+				FROM TB_SYS_ERRLOG_LST
+			</when>
+		</choose>
+	</select>
+
+	<select id="getDelTargetClusItmList"
+		resultType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* scheduledtasks.getDelTargetClusItmList */
+		SELECT
+			A.CLUS_ITM_CD
+			,A.CLUS_ITM_NM AS mncntrctSpccNm
+			,A.CLUS_ITM_CLCD
+			,A.PRDT_CD
+			,A.SCREN_DISP_ORD
+			,A.SN
+			,A.DATA_TRANS_STTCD
+			,A.DEL_YN
+			,B.MNSPCC_CFCD
+			,B.INSKND_CD
+			,B.PAGE_FLD
+			,B.RQU_SEL_YN
+		FROM
+			TB_CLUS_ITM_SET_MST A
+			,TB_PRDT_INFO_MST B
+		WHERE 1=1
+			AND A.DEL_YN = 'Y'
+			AND A.CLUS_ITM_CD = B.PRDT_CD
+	</select>
+
+	<delete id="deleteDelPrdtCdModule"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* scheduledtasks.deleteDelPrdtCdModule */
+		DELETE FROM TB_INDV_CLUS_PRDT_MST
+		WHERE 1=1
+			AND PRDT_CD = #{prdtCd}
+	</delete>
+
+	<delete id="deleteDelClusItmModule"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* scheduledtasks.deleteDelClusItmModule */
+		DELETE FROM TB_INDV_CLUS_PRDT_MST
+		WHERE 1=1
+			AND CLUS_ITM_CD = #{clusItmCd}
+			AND PRDT_CD = #{prdtCd}
+	</delete>
+
+	<delete id="deleteDelPrdtCdSol"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* scheduledtasks.deleteDelPrdtCdSol */
+		DELETE FROM TB_CLUS_ITM_SET_MST
+		WHERE 1=1
+			AND PRDT_CD = #{prdtCd}
+	</delete>
+
+	<delete id="deleteDelClusItmSol"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* scheduledtasks.deleteDelClusItmSol */
+		DELETE FROM TB_CLUS_ITM_SET_MST
+		WHERE 1=1
+			AND CLUS_ITM_CD = #{clusItmCd}
+			AND PRDT_CD = #{prdtCd}
+	</delete>
+
+	<select id="getTransTargetClusItmList"
+		resultType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* scheduledtasks.getTransTargetClusItmList */
+		SELECT
+			A.CLUS_ITM_CD
+			,A.CLUS_ITM_NM AS mncntrctSpccNm
+			,A.CLUS_ITM_CLCD
+			,A.PRDT_CD
+			,A.SCREN_DISP_ORD
+			,A.SN
+			,A.DATA_TRANS_STTCD
+			,A.DEL_YN
+			,B.MNSPCC_CFCD
+			,B.INSKND_CD
+			,B.PAGE_FLD
+			,B.RQU_SEL_YN
+		FROM
+			TB_CLUS_ITM_SET_MST A
+			,TB_PRDT_INFO_MST B
+		WHERE 1=1
+			AND A.DATA_TRANS_STTCD = 'S' /* S:전송대기, Y:전송성공, N:전송실패, F:시스템오류 */
+			AND A.CLUS_ITM_CD = B.PRDT_CD
+	</select>
+
+	<insert id="insertItmModule"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* scheduledtasks.insertItmModule */
+		INSERT INTO TB_INDV_CLUS_PRDT_MST (
+			MNSPCC_CFCD
+			,RGST_YMD
+			,CRT_DTM
+			,MDF_DTM
+			,CRTR
+			,UPDUSR
+			,PRDT_CD
+			,CLUS_ITM_CD
+			,SN
+			,MNCNTRCT_SPCC_NM
+			,INSKND_CD
+			,RQU_SEL_YN
+		) VALUES (
+			#{mnspccCfcd}
+			,''
+			,CURRENT_TIMESTAMP
+			,CURRENT_TIMESTAMP
+			,'BATCH'
+			,'BATCH'
+			,#{prdtCd}
+			,#{clusItmCd}
+			,#{sn}
+			,#{mncntrctSpccNm}
+			,#{inskndCd}
+			,#{rquSelYn}
+		)
+	</insert>
+
+	<update id="setDataTransCdY"
+		parameterType="com.cgmoffice.api.cnt.dto.PrdtClusDto"
+	>
+	/* scheduledtasks.setDataTransCdY */
+		UPDATE TB_CLUS_ITM_SET_MST SET
+			DATA_TRANS_STTCD = 'Y'
+		WHERE 1=1
+			AND CLUS_ITM_CD = #{clusItmCd}
+			AND PRDT_CD = #{prdtCd}
+	</update>
+
+</mapper>

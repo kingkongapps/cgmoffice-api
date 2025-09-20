@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace='api.sys.ErrLogHistMng'>
+
+	<!-- 에러로그 조회 -->
+	<select id="getListPage_TB_SYS_ERRLOG_LST"
+		parameterType="com.cgmoffice.api.sys.dto.SearchErrLogHistDto"
+		resultType="com.cgmoffice.api.sys.dto.ErrLogHistDto"
+	>
+	/*api.sys.ErrLogHistMng.getListPage_TB_SYS_ERRLOG_LST*/
+		SELECT
+			A.ERR_LOGID errLogid
+			,A.OCCUR_DTM occurDtm
+			,A.METH_NM methNm
+			,CASE A.SYS_DLNG_CFCD
+		        WHEN '1' THEN '조회'
+		        WHEN '2' THEN '등록'
+		        WHEN '3' THEN '삭제'
+		        WHEN '4' THEN '수정'
+		        WHEN '5' THEN '처리'
+		        ELSE ''
+		    END AS sysDlngCfcd
+			,A.DLNG_TIME dlngTime
+			,A.REQR reqr
+			,A.CRT_DTM crtDtm
+			,A.ERR_DTL errDtl
+		FROM TB_SYS_ERRLOG_LST A
+		WHERE 1=1
+		<if test='sysDlngCfcd != null and sysDlngCfcd != "" and sysDlngCfcd != "0"'>
+			AND SYS_DLNG_CFCD = #{sysDlngCfcd}
+		</if>
+		<if test='startDate != null and startDate != "" and endDate != null and endDate != ""'>
+			AND OCCUR_DTM BETWEEN #{startDate} AND #{endDate}
+		</if>
+	</select>
+
+
+
+
+</mapper>
