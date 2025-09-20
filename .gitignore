@@ -16,7 +16,6 @@ target/
 ### IntelliJ IDEA ###
 .idea
 .DS_Store
-.mvn
 *.iws
 *.iml
 *.ipr
